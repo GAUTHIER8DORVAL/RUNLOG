@@ -1,18 +1,18 @@
 {
   "courses": [
     {
+      "annee": 2024,
+      "date": "15 juin 2024",
       "nom": "Trail des Crêtes",
       "lieu": "Vosges",
       "type": "Trail",
-      "date": "15 juin 2024",
-      "annee": 2024,
       "dist": 42,
       "dplus": 1800,
       "temps": "5h12",
-      "participants": 650,
       "classement": 3,
-      "classementCat": 1,
-      "cat": "M0"
+      "participants": 650,
+      "cat": "M0",
+      "classementCat": 1
     }
   ]
 }
