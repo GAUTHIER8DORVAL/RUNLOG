@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Carnet de Course</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0f;
+      --surface:   #141418;
+      --border:    #222228;
+      --accent:    #e8ff47;
+      --accent2:   #ff6b35;
+      --text:      #f0f0ee;
+      --muted:     #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-weight: 900; font-size: 1.4rem; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav a {
+      font-family: var(--font-head); font-weight: 500;
+      font-size: .95rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+    }
+    nav a:hover, nav a.active { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      padding-top: 80px;
+      position: relative; overflow: hidden;
+    }
+
+    /* big decorative number */
+    .hero::after {
+      content: '2025';
+      position: absolute; right: -0.05em; bottom: -.1em;
+      font-family: var(--font-head); font-weight: 900;
+      font-size: clamp(12rem, 22vw, 22rem);
+      line-height: 1; color: transparent;
+      -webkit-text-stroke: 1px var(--border);
+      pointer-events: none; user-select: none;
+      z-index: 0;
+    }
+
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 4rem 3rem 4rem 4rem;
+      position: relative; z-index: 1;
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: var(--font-head); font-size: .8rem;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 2rem;
+    }
+    .hero-tag::before {
+      content: ''; display: block;
+      width: 2rem; height: 1px; background: var(--accent);
+    }
+
+    h1 {
+      font-family: var(--font-head); font-weight: 900;
+      font-size: clamp(3.5rem, 7vw, 7rem);
+      line-height: .95; text-transform: uppercase;
+      letter-spacing: -.01em;
+      margin-bottom: 2rem;
+    }
+    h1 em {
+      font-style: normal; color: var(--accent);
+      display: block;
+    }
+
+    .hero-desc {
+      font-size: 1rem; font-weight: 300; line-height: 1.7;
+      color: var(--muted); max-width: 38ch;
+      margin-bottom: 3rem;
+    }
+
+    .cta-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      font-family: var(--font-head); font-weight: 700;
+      font-size: .9rem; letter-spacing: .15em; text-transform: uppercase;
+      padding: .9rem 2rem; border-radius: 2px;
+      text-decoration: none; transition: all .2s; cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent); color: #0d0d0f;
+      border: 2px solid var(--accent);
+    }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 2px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--text); }
+
+    /* ── STATS SIDEBAR ── */
+    .hero-right {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 4rem 4rem 4rem 2rem;
+      position: relative; z-index: 1;
+    }
+
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .stat-card {
+      background: var(--surface);
+      padding: 2rem 1.8rem;
+      display: flex; flex-direction: column; gap: .4rem;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp .5s forwards;
+    }
+    .stat-card:nth-child(1) { animation-delay: .1s; }
+    .stat-card:nth-child(2) { animation-delay: .2s; }
+    .stat-card:nth-child(3) { animation-delay: .3s; }
+    .stat-card:nth-child(4) { animation-delay: .4s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-label {
+      font-family: var(--font-head); font-size: .75rem;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .stat-value {
+      font-family: var(--font-head); font-weight: 900;
+      font-size: 3.2rem; line-height: 1;
+      color: var(--text);
+    }
+    .stat-value span { color: var(--accent); font-size: 1.5rem; }
+    .stat-sub {
+      font-size: .8rem; color: var(--muted); font-weight: 300;
+    }
+
+    /* ── DERNIÈRES COURSES ── */
+    .section {
+      padding: 6rem 4rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+    .section-title {
+      font-family: var(--font-head); font-weight: 900;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      text-transform: uppercase; letter-spacing: -.01em;
+    }
+    .section-title span { color: var(--accent); }
+    .see-all {
+      font-family: var(--font-head); font-size: .85rem;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+    }
+    .see-all:hover { color: var(--accent); }
+
+    /* Race cards */
+    .races-list { display: flex; flex-direction: column; gap: 1px; }
+
+    .race-row {
+      display: grid;
+      grid-template-columns: 80px 1fr auto auto auto;
+      align-items: center; gap: 2rem;
+      padding: 1.6rem 2rem;
+      background: var(--surface);
+      border-left: 3px solid transparent;
+      transition: border-color .2s, background .2s;
+      text-decoration: none; color: var(--text);
+    }
+    .race-row:hover {
+      background: #18181e;
+      border-left-color: var(--accent);
+    }
+
+    .race-rank {
+      font-family: var(--font-head); font-weight: 900;
+      font-size: 2rem; color: var(--muted); text-align: center;
+    }
+    .race-rank.podium { color: var(--accent); }
+
+    .race-info {}
+    .race-name {
+      font-family: var(--font-head); font-weight: 700;
+      font-size: 1.15rem; text-transform: uppercase;
+      letter-spacing: .05em; margin-bottom: .2rem;
+    }
+    .race-meta {
+      font-size: .8rem; color: var(--muted); font-weight: 300;
+    }
+
+    .race-badge {
+      font-family: var(--font-head); font-size: .7rem;
+      letter-spacing: .15em; text-transform: uppercase;
+      padding: .3rem .8rem; border-radius: 2px;
+    }
+    .badge-trail { background: rgba(232,255,71,.1); color: var(--accent); }
+    .badge-route { background: rgba(255,107,53,.1); color: var(--accent2); }
+
+    .race-dist {
+      font-family: var(--font-head); font-weight: 700;
+      font-size: 1.1rem; text-align: right;
+    }
+    .race-dist small { font-weight: 300; font-size: .75rem; color: var(--muted); }
+
+    .race-time {
+      font-family: var(--font-head); font-weight: 500;
+      font-size: 1.1rem; color: var(--muted); text-align: right;
+      min-width: 80px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--muted); font-size: .8rem;
+    }
+    .footer-logo {
+      font-family: var(--font-head); font-weight: 900;
+      font-size: 1rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .footer-logo span { color: var(--accent); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      nav ul { gap: 1.5rem; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { padding: 2rem 1.5rem 4rem; }
+      .hero-left { padding: 3rem 1.5rem 2rem; }
+      .hero::after { font-size: 30vw; }
+      .section { padding: 4rem 1.5rem; }
+      .race-row { grid-template-columns: 60px 1fr auto; gap: 1rem; }
+      .race-badge, .race-time { display: none; }
+      footer { flex-direction: column; gap: .5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <ul>
+      <li><a href="index.html" class="active">Accueil</a></li>
+      <li><a href="courses.html">Courses</a></li>
+      <li><a href="stats.html">Stats</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">Trail &amp; Route</div>
+      <h1>Mon carnet<em>de course</em></h1>
+      <p class="hero-desc">
+        Chaque départ, chaque sommet, chaque arrivée. Ici je retrace toutes mes courses, mes classements et ma progression au fil des saisons.
+      </p>
+      <div class="cta-group">
+        <a href="courses.html" class="btn btn-primary">Voir mes courses</a>
+        <a href="stats.html" class="btn btn-ghost">Mes statistiques</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Courses disputées</div>
+          <div class="stat-value">24<span></span></div>
+          <div class="stat-sub">depuis 2021</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Kilomètres totaux</div>
+          <div class="stat-value">892<span>km</span></div>
+          <div class="stat-sub">en compétition</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Meilleur classement</div>
+          <div class="stat-value">3<span>e</span></div>
+          <div class="stat-sub">Trail des Crêtes 2024</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Dénivelé cumulé</div>
+          <div class="stat-value">41<span>km+</span></div>
+          <div class="stat-sub">D+ total</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DERNIÈRES COURSES -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Dernières <span>courses</span></h2>
+      <a href="courses.html" class="see-all">Tout voir →</a>
+    </div>
+
+    <div class="races-list">
+
+      <a href="courses.html" class="race-row">
+        <div class="race-rank podium">3</div>
+        <div class="race-info">
+          <div class="race-name">Trail des Crêtes</div>
+          <div class="race-meta">15 juin 2024 · Vosges</div>
+        </div>
+        <div class="race-badge badge-trail">Trail</div>
+        <div class="race-dist">42<small>km</small></div>
+        <div class="race-time">5h12'34</div>
+      </a>
+
+      <a href="courses.html" class="race-row">
+        <div class="race-rank">12</div>
+        <div class="race-info">
+          <div class="race-name">Semi-marathon de Lyon</div>
+          <div class="race-meta">3 mars 2024 · Lyon</div>
+        </div>
+        <div class="race-badge badge-route">Route</div>
+        <div class="race-dist">21<small>km</small></div>
+        <div class="race-time">1h38'20</div>
+      </a>
+
+      <a href="courses.html" class="race-row">
+        <div class="race-rank">7</div>
+        <div class="race-info">
+          <div class="race-name">Grenoble Vertical Km</div>
+          <div class="race-meta">18 nov. 2023 · Grenoble</div>
+        </div>
+        <div class="race-badge badge-trail">Trail</div>
+        <div class="race-dist">8<small>km</small></div>
+        <div class="race-time">58'14</div>
+      </a>
+
+      <a href="courses.html" class="race-row">
+        <div class="race-rank">21</div>
+        <div class="race-info">
+          <div class="race-name">10km de la Villette</div>
+          <div class="race-meta">9 sept. 2023 · Paris</div>
+        </div>
+        <div class="race-badge badge-route">Route</div>
+        <div class="race-dist">10<small>km</small></div>
+        <div class="race-time">42'05</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Run<span>Log</span></div>
+    <div>Fait avec ❤️ et beaucoup de dénivelé</div>
+  </footer>
+
+</body>
+</html>
