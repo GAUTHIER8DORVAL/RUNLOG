@@ -1,18 +1,18 @@
 {
   "courses": [
     {
-      "nom": "Trail des Crêtes",
-      "lieu": "Vosges",
-      "type": "Trail",
-      "date": "15 juin 2024",
-      "annee": 2024,
-      "dist": 42,
-      "dplus": 1800,
-      "temps": "5h12",
-      "participants": 650,
-      "classement": 3,
+      "participants": 175,
+      "annee": 2026,
+      "dist": 65,
+      "classement": 21,
       "classementCat": 1,
-      "cat": "M0"
+      "nom": "Western Azuréenne - La Môle",
+      "lieu": "Grimaud",
+      "date": "11 avril 2026",
+      "cat": "ESM",
+      "type": "Trail",
+      "dplus": 2000,
+      "temps": "7h23"
     }
   ]
 }
