@@ -1,9 +1,8 @@
 backend:
-  name: github
-  repo: GAUTHIER8DORVAL/RUNLOG # ⚠️ Mets ton pseudo et le nom de ton projet ici
-  branch: main # Remplace par master si ta branche s'appelle master
+  name: git-gateway
+  branch: main
 
-media_folder: "assets/images" # Où seront stockées les photos si tu en ajoutes
+media_folder: "assets/images"
 public_folder: "/assets/images"
 
 collections:
@@ -21,14 +20,14 @@ collections:
             summary: "{{fields.nom}} ({{fields.dist}}km)"
             fields:
               - { label: "Année (ex: 2024)", name: "annee", widget: "number", value_type: "int" }
-              - { label: "Date textuelle (ex: 15 juin 2024)", name: "date", widget: "string" }
+              - { label: "Date (ex: 15 juin 2024)", name: "date", widget: "string" }
               - { label: "Nom de la course", name: "nom", widget: "string" }
               - { label: "Lieu", name: "lieu", widget: "string" }
               - { label: "Type", name: "type", widget: "select", options: ["Trail", "Route"] }
-              - { label: "Distance (en km)", name: "dist", widget: "number", value_type: "int" }
-              - { label: "Dénivelé (+)", name: "dplus", widget: "number", value_type: "int", required: false }
-              - { label: "Temps Chrono (ex: 1h38'20)", name: "temps", widget: "string" }
-              - { label: "Classement Général", name: "classement", widget: "number", value_type: "int" }
-              - { label: "Nombre total de participants", name: "participants", widget: "number", value_type: "int" }
-              - { label: "Catégorie (ex: M1H)", name: "cat", widget: "string" }
-              - { label: "Classement dans la Catégorie", name: "classementCat", widget: "number", value_type: "int" }
+              - { label: "Distance (km)", name: "dist", widget: "number", value_type: "int" }
+              - { label: "Dénivelé D+", name: "dplus", widget: "number", value_type: "int", required: false }
+              - { label: "Temps chrono", name: "temps", widget: "string" }
+              - { label: "Classement général", name: "classement", widget: "number", value_type: "int" }
+              - { label: "Nombre de participants", name: "participants", widget: "number", value_type: "int" }
+              - { label: "Catégorie (ex: M0)", name: "cat", widget: "string" }
+              - { label: "Classement catégorie", name: "classementCat", widget: "number", value_type: "int" }
