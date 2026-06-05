@@ -192,20 +192,38 @@
   </footer>
 
   <script>
-    const courses = [
-      { annee: 2024, date: "15 juin 2024",    nom: "Trail des Crêtes",         lieu: "Vosges",        type: "Trail", dist: 42,  dplus: 2200, temps: "5h12'34", classement: 3,  participants: 187,   cat: "V1H", classementCat: 1  },
-      { annee: 2024, date: "3 mars 2024",     nom: "Semi-marathon de Lyon",    lieu: "Lyon",          type: "Route", dist: 21,  dplus: 0,    temps: "1h38'20", classement: 12, participants: 4200,  cat: "V1H", classementCat: 4  },
-      { annee: 2023, date: "18 nov. 2023",    nom: "Grenoble Vertical Km",     lieu: "Grenoble",      type: "Trail", dist: 8,   dplus: 1000, temps: "58'14",   classement: 7,  participants: 320,   cat: "V1H", classementCat: 2  },
-      { annee: 2023, date: "9 sept. 2023",    nom: "10km de la Villette",      lieu: "Paris",         type: "Route", dist: 10,  dplus: 0,    temps: "42'05",   classement: 21, participants: 1850,  cat: "V1H", classementCat: 8  },
-      { annee: 2023, date: "20 mai 2023",     nom: "Ultra Trail du Morvan",    lieu: "Bourgogne",     type: "Trail", dist: 65,  dplus: 3100, temps: "8h44'10", classement: 15, participants: 210,   cat: "V1H", classementCat: 5  },
-      { annee: 2023, date: "12 fév. 2023",    nom: "Marathon de Paris",        lieu: "Paris",         type: "Route", dist: 42,  dplus: 0,    temps: "3h52'47", classement: 89, participants: 45000, cat: "V1H", classementCat: 31 },
-      { annee: 2022, date: "2 oct. 2022",     nom: "Trail de la Bérarde",      lieu: "Oisans",        type: "Trail", dist: 28,  dplus: 1800, temps: "3h58'22", classement: 5,  participants: 145,   cat: "V1H", classementCat: 2  },
-      { annee: 2022, date: "11 juin 2022",    nom: "10km des Mureaux",         lieu: "Île-de-France", type: "Route", dist: 10,  dplus: 0,    temps: "40'38",   classement: 8,  participants: 620,   cat: "V1H", classementCat: 3  },
-      { annee: 2022, date: "27 mars 2022",    nom: "Trail du Vercors",         lieu: "Vercors",       type: "Trail", dist: 35,  dplus: 2400, temps: "5h01'55", classement: 22, participants: 390,   cat: "V1H", classementCat: 9  },
-      { annee: 2021, date: "17 oct. 2021",    nom: "Semi de Bordeaux",         lieu: "Bordeaux",      type: "Route", dist: 21,  dplus: 0,    temps: "1h44'12", classement: 34, participants: 2800,  cat: "SEH", classementCat: 28 },
-      { annee: 2021, date: "4 juil. 2021",    nom: "Trail des Gorges du Tarn", lieu: "Aveyron",       type: "Trail", dist: 22,  dplus: 1300, temps: "3h02'41", classement: 11, participants: 280,   cat: "SEH", classementCat: 9  },
-      { annee: 2021, date: "9 mai 2021",      nom: "10km du Lac d'Annecy",     lieu: "Annecy",        type: "Route", dist: 10,  dplus: 0,    temps: "41'50",   classement: 18, participants: 950,   cat: "SEH", classementCat: 14 },
-    ];
+// On va chercher la liste des fichiers créés par le CMS
+async function loadCourses() {
+  try {
+    // Étape A : On demande à l'API GitHub la liste des fichiers dans le dossier
+    const response = await fetch('https://api.github.com/repos/gauthier8dorval/RUNLOG/contents/content/courses');
+    const files = await response.json();
+    
+    // Étape B : On va lire le contenu de chaque fichier JSON trouvé
+    const fetchPromises = files
+      .filter(file => file.name.endsWith('.json'))
+      .map(file => fetch(file.download_url).then(res => res.json()));
+      
+    const courses = await fetchPromises.all(fetchPromises);
+
+    // Étape C : Ton code actuel prend le relais avec les vraies données !
+    initTable(courses); 
+
+  } catch (error) {
+    console.error("Erreur lors du chargement des courses :", error);
+  }
+}
+
+function initTable(courses) {
+  // --- ENCAPSULE TON CODE DE FILTRES ACTUEL ICI ---
+  // Remets ici tes fonctions existantes : renderTable(courses), applyFilters(), etc.
+  // En veillant à ce qu'elles utilisent le tableau "courses" qu'on vient de récupérer.
+  
+  renderTable(courses);
+}
+
+// On lance le chargement au démarrage de la page
+loadCourses();
 
     function rankClass(n) {
       if (n === 1) return 'gold';
