@@ -7,22 +7,28 @@ media_folder: "assets/images" # Où seront stockées les photos si tu en ajoutes
 public_folder: "/assets/images"
 
 collections:
-  - name: "courses"
-    label: "Mes Courses"
-    folder: "content/courses" # Le CMS va créer un fichier JSON par course dans ce dossier
-    create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
-    format: "json" # On enregistre au format JSON, très facile à lire en JavaScript
-    fields:
-      - { label: "Année (ex: 2024)", name: "annee", widget: "number", value_type: "int" }
-      - { label: "Date textuelle (ex: 15 juin 2024)", name: "date", widget: "string" }
-      - { label: "Nom de la course", name: "nom", widget: "string" }
-      - { label: "Lieu", name: "lieu", widget: "string" }
-      - { label: "Type", name: "type", widget: "select", options: ["Trail", "Route"] }
-      - { label: "Distance (en km)", name: "dist", widget: "number", value_type: "int" }
-      - { label: "Dénivelé (+)", name: "dplus", widget: "number", value_type: "int", required: false }
-      - { label: "Temps Chrono (ex: 1h38'20)", name: "temps", widget: "string" }
-      - { label: "Classement Général", name: "classement", widget: "number", value_type: "int" }
-      - { label: "Nombre total de participants", name: "participants", widget: "number", value_type: "int" }
-      - { label: "Catégorie (ex: M1H)", name: "cat", widget: "string" }
-      - { label: "Classement dans la Catégorie", name: "classementCat", widget: "number", value_type: "int" }
+  - name: "donnees"
+    label: "Données du site"
+    files:
+      - file: "courses.json"
+        label: "Liste des courses"
+        name: "liste_courses"
+        format: "json"
+        fields:
+          - name: "courses"
+            label: "Mes Courses"
+            widget: "list"
+            summary: "{{fields.nom}} ({{fields.dist}}km)"
+            fields:
+              - { label: "Année (ex: 2024)", name: "annee", widget: "number", value_type: "int" }
+              - { label: "Date textuelle (ex: 15 juin 2024)", name: "date", widget: "string" }
+              - { label: "Nom de la course", name: "nom", widget: "string" }
+              - { label: "Lieu", name: "lieu", widget: "string" }
+              - { label: "Type", name: "type", widget: "select", options: ["Trail", "Route"] }
+              - { label: "Distance (en km)", name: "dist", widget: "number", value_type: "int" }
+              - { label: "Dénivelé (+)", name: "dplus", widget: "number", value_type: "int", required: false }
+              - { label: "Temps Chrono (ex: 1h38'20)", name: "temps", widget: "string" }
+              - { label: "Classement Général", name: "classement", widget: "number", value_type: "int" }
+              - { label: "Nombre total de participants", name: "participants", widget: "number", value_type: "int" }
+              - { label: "Catégorie (ex: M1H)", name: "cat", widget: "string" }
+              - { label: "Classement dans la Catégorie", name: "classementCat", widget: "number", value_type: "int" }
