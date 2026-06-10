@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Profil Athlète — RunLog</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -30,6 +31,7 @@
     /* --- HERO & ACCUEIL --- */
     .back-link { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--font-head); font-size: .85rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 1.5rem 4rem; width: 100%; border-bottom: 1px solid var(--border); transition: color .2s; }
     .back-link:hover { color: var(--accent); }
+    .back-link i { font-size: 1rem; }
 
     .athlete-hero { padding: 4rem 4rem; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: center; position: relative; overflow: hidden; }
     .athlete-hero::after { content: attr(data-initials); position: absolute; right: -0.02em; bottom: -.1em; font-family: var(--font-head); font-weight: 900; font-size: clamp(10rem, 20vw, 20rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; z-index: 0; }
@@ -40,7 +42,7 @@
     .athlete-tag { font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: .8rem; display: flex; align-items: center; gap: .5rem; }
     .athlete-tag::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--accent); }
     .athlete-name { font-family: var(--font-head); font-weight: 900; font-size: clamp(2.5rem, 5vw, 5rem); line-height: .95; text-transform: uppercase; margin-bottom: 1rem; }
-    
+
     .meta-row-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
     .athlete-cat { display: inline-block; font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; padding: .4rem 1rem; background: rgba(232,255,71,.1); color: var(--accent); border-radius: 2px; }
 
@@ -50,6 +52,7 @@
     .btn-ami.waiting { background: var(--surface); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; }
     .btn-ami.friends { background: rgba(232, 255, 71, 0.05); color: var(--accent); border: 1px solid rgba(232, 255, 71, 0.2); cursor: default; }
     .btn-ami:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-ami i { font-size: 1rem; line-height: 1; }
 
     /* --- STATS RAPIDES --- */
     .quick-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
@@ -66,7 +69,7 @@
     .table-container { width: 100%; overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
     table { border-collapse: collapse; width: 100%; min-width: 800px; text-align: left; }
     thead th { font-family: var(--font-head); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding: 1.2rem 1rem; border-bottom: 1px solid var(--border); background: rgba(20,20,24,0.5); }
-    
+
     .th-rank { width: 80px; text-align: center; }
     .th-nom { min-width: 200px; }
     .th-type { width: 100px; }
@@ -91,11 +94,11 @@
 
     .race-name { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text); }
     .race-location { font-size: .78rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
-    
+
     .badge { font-family: var(--font-head); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; padding: .3rem .7rem; border-radius: 2px; display: inline-block; font-weight: 700; }
     .badge-trail { background: rgba(232,255,71,0.1); color: var(--accent); }
     .badge-route { background: rgba(255,107,53,0.1); color: var(--accent2); }
-    
+
     .td-num { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; }
     .td-num small { font-weight: 400; font-size: .75rem; color: var(--muted); margin-left: 0.1rem; }
     .td-muted { color: var(--muted); font-size: .9rem; }
@@ -112,12 +115,14 @@
     footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .85rem; background: #09090b; }
     .footer-logo { font-family: var(--font-head); font-weight: 900; font-size: 1.1rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
     .footer-logo span { color: var(--accent); }
+    .footer-credit { display: flex; align-items: center; gap: .4rem; }
+    .footer-credit svg { width: 16px; height: 16px; flex-shrink: 0; }
 
     /* --- RESPONSIVE DESIGN --- */
     @media(max-width:900px) {
-      nav { padding: 1rem 1.5rem; } 
-      nav ul { gap: 1.5rem; } 
-      nav::after { display: none; } 
+      nav { padding: 1rem 1.5rem; }
+      nav ul { gap: 1.5rem; }
+      nav::after { display: none; }
       .logo { flex: initial; }
       .main-content { margin-top: 65px; }
       .athlete-hero { padding: 3rem 1.5rem; grid-template-columns: 1fr; gap: 1.5rem; text-align: center; justify-items: center; }
@@ -147,7 +152,10 @@
   </nav>
 
   <div class="main-content">
-    <a id="back-link" href="index.html" class="back-link">← Retour</a>
+    <a id="back-link" href="index.html" class="back-link">
+      <i class="ti ti-arrow-left" aria-hidden="true"></i>
+      <span id="back-link-text">Retour</span>
+    </a>
 
     <div id="athlete-content">
       <div id="lbl-loading-main" style="text-align:center; padding:8rem 2rem; color:var(--muted); font-family:var(--font-head); text-transform:uppercase; letter-spacing:.1em">Chargement…</div>
@@ -156,7 +164,9 @@
 
   <footer>
     <div class="footer-logo">Run<span>Log</span></div>
-    <div id="footer-credit">Fait avec ❤️ et beaucoup de dénivelé</div>
+    <div class="footer-credit" id="footer-credit">
+      Fait avec <svg viewBox="0 0 24 24" fill="#ff6b35" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> et beaucoup de dénivelé
+    </div>
   </footer>
 
   <script>
@@ -168,46 +178,55 @@
     const traductions = {
       fr: {
         nav_home: "Accueil", nav_runs: "Courses", nav_stats: "Stats", nav_profile: "Profil",
-        back_generic: "← Retour", back_home: "← Accueil", back_friends: "← Retour à mes amis",
+        back_generic: "Retour", back_home: "Accueil", back_friends: "Retour à mes amis",
         loading: "Chargement…",
         athlete_tag: "Profil athlète",
-        btn_add_friend: "👤 Ajouter en ami", btn_waiting: "✉️ Demande envoyée", btn_accept_invitation: "⚡ Accepter l'invitation", btn_friends: "✅ Amis",
+        btn_add_friend: '<i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter en ami',
+        btn_waiting: '<i class="ti ti-send" aria-hidden="true"></i> Demande envoyée',
+        btn_accept_invitation: '<i class="ti ti-bolt" aria-hidden="true"></i> Accepter l\'invitation',
+        btn_friends: '<i class="ti ti-users" aria-hidden="true"></i> Amis',
         stat_courses: "Courses", stat_distance: "Distance totale", stat_dplus: "Dénivelé cumulé", stat_podiums: "Podiums cat.",
         title_all_races: "Toutes ses <span>courses</span>",
         no_race: "Cet athlète n'a pas encore enregistré de course.",
         th_rank: "Clt.", th_race: "Course", th_type: "Type", th_date: "Date", th_dist: "Distance", th_dplus: "D+", th_time: "Temps", th_part: "Participants", th_cat_clt: "Clt. Cat.",
         not_found_title: "Athlète <span>introuvable</span>", not_found_sub_id: "Aucun identifiant fourni.", not_found_sub_profile: "Ce profil n'existe pas.",
-        footer_credit: "Fait avec ❤️ et beaucoup de dénivelé",
+        footer_credit: 'Fait avec <svg viewBox="0 0 24 24" fill="#ff6b35" style="width:16px;height:16px;vertical-align:-2px" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> et beaucoup de dénivelé',
         cat_minime: "Minime / Benjamin", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Espoir (ES)",
         cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
       },
       en: {
         nav_home: "Home", nav_runs: "Runs", nav_stats: "Stats", nav_profile: "Profile",
-        back_generic: "← Back", back_home: "← Home", back_friends: "← Back to my friends",
+        back_generic: "Back", back_home: "Home", back_friends: "Back to my friends",
         loading: "Loading…",
         athlete_tag: "Athlete profile",
-        btn_add_friend: "👤 Add Friend", btn_waiting: "✉️ Request sent", btn_accept_invitation: "⚡ Accept invitation", btn_friends: "✅ Friends",
+        btn_add_friend: '<i class="ti ti-user-plus" aria-hidden="true"></i> Add Friend',
+        btn_waiting: '<i class="ti ti-send" aria-hidden="true"></i> Request sent',
+        btn_accept_invitation: '<i class="ti ti-bolt" aria-hidden="true"></i> Accept invitation',
+        btn_friends: '<i class="ti ti-users" aria-hidden="true"></i> Friends',
         stat_courses: "Runs", stat_distance: "Total distance", stat_dplus: "Total elevation", stat_podiums: "Cat. Podiums",
         title_all_races: "All their <span>runs</span>",
         no_race: "This athlete has not recorded any runs yet.",
         th_rank: "Rank", th_race: "Run", th_type: "Type", th_date: "Date", th_dist: "Distance", th_dplus: "D+", th_time: "Time", th_part: "Participants", th_cat_clt: "Cat. Rank",
         not_found_title: "Athlete <span>not found</span>", not_found_sub_id: "No identifier provided.", not_found_sub_profile: "This profile does not exist.",
-        footer_credit: "Made with ❤️ and a lot of elevation",
+        footer_credit: 'Made with <svg viewBox="0 0 24 24" fill="#ff6b35" style="width:16px;height:16px;vertical-align:-2px" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> and a lot of elevation',
         cat_minime: "Youth", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Hopeful (ES)",
         cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
       },
       es: {
         nav_home: "Inicio", nav_runs: "Carreras", nav_stats: "Estadísticas", nav_profile: "Perfil",
-        back_generic: "← Volver", back_home: "← Inicio", back_friends: "← Volver a mis amigos",
+        back_generic: "Volver", back_home: "Inicio", back_friends: "Volver a mis amigos",
         loading: "Cargando…",
         athlete_tag: "Perfil de atleta",
-        btn_add_friend: "👤 Añadir amigo", btn_waiting: "✉️ Solicitud enviada", btn_accept_invitation: "⚡ Aceptar invitación", btn_friends: "✅ Amigos",
+        btn_add_friend: '<i class="ti ti-user-plus" aria-hidden="true"></i> Añadir amigo',
+        btn_waiting: '<i class="ti ti-send" aria-hidden="true"></i> Solicitud enviada',
+        btn_accept_invitation: '<i class="ti ti-bolt" aria-hidden="true"></i> Aceptar invitación',
+        btn_friends: '<i class="ti ti-users" aria-hidden="true"></i> Amigos',
         stat_courses: "Carreras", stat_distance: "Distancia total", stat_dplus: "Desnivel acumulado", stat_podiums: "Podios cat.",
         title_all_races: "Todas sus <span>carreras</span>",
         no_race: "Este atleta aún no ha registrado ninguna carrera.",
         th_rank: "Clas.", th_race: "Carrera", th_type: "Tipo", th_date: "Fecha", th_dist: "Distancia", th_dplus: "D+", th_time: "Tiempo", th_part: "Participantes", th_cat_clt: "Clas. Cat.",
         not_found_title: "Atleta <span>no encontrado</span>", not_found_sub_id: "No se proporcionó ningún identificador.", not_found_sub_profile: "Este perfil no existe.",
-        footer_credit: "Hecho con ❤️ y mucho desnivel",
+        footer_credit: 'Hecho con <svg viewBox="0 0 24 24" fill="#ff6b35" style="width:16px;height:16px;vertical-align:-2px" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> y mucho desnivel',
         cat_minime: "Mínimo", cat_cadet: "Cadete (CA)", cat_junior: "Junior (JU)", cat_espoir: "Promesa (ES)",
         cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
       }
@@ -217,23 +236,23 @@
       currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
       const t = traductions[currentLang];
 
-      if(document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
-      if(document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
-      if(document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
-      if(document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
-      if(document.getElementById('lbl-loading-main')) document.getElementById('lbl-loading-main').textContent = t.loading;
-      if(document.getElementById('footer-credit')) document.getElementById('footer-credit').textContent = t.footer_credit;
+      if (document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
+      if (document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
+      if (document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
+      if (document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
+      if (document.getElementById('lbl-loading-main')) document.getElementById('lbl-loading-main').textContent = t.loading;
+      if (document.getElementById('footer-credit')) document.getElementById('footer-credit').innerHTML = t.footer_credit;
 
       const params = new URLSearchParams(window.location.search);
       const from = params.get('from');
-      const backLink = document.getElementById('back-link');
-      if (backLink) {
+      const backLinkText = document.getElementById('back-link-text');
+      if (backLinkText) {
         if (from === 'amis' || (document.referrer && document.referrer.indexOf('liste-amis') !== -1)) {
-          backLink.textContent = t.back_friends;
+          backLinkText.textContent = t.back_friends;
         } else if (document.referrer && document.referrer !== window.location.href) {
-          backLink.textContent = t.back_generic;
+          backLinkText.textContent = t.back_generic;
         } else {
-          backLink.textContent = t.back_home;
+          backLinkText.textContent = t.back_home;
         }
       }
     }
@@ -248,7 +267,7 @@
         backLink.href = 'liste-amis.html';
       } else if (document.referrer && document.referrer !== window.location.href) {
         backLink.href = '#';
-        backLink.addEventListener('click', function(e){ e.preventDefault(); history.back(); });
+        backLink.addEventListener('click', function(e) { e.preventDefault(); history.back(); });
       } else {
         backLink.href = 'index.html';
       }
@@ -268,7 +287,7 @@
       if (isNaN(anneeNaissance)) return traductions[currentLang].cat_no_date;
       const age = new Date().getFullYear() - anneeNaissance;
       const t = traductions[currentLang];
-      
+
       if (age < 16) return t.cat_minime;
       if (age <= 17) return t.cat_cadet;
       if (age <= 19) return t.cat_junior;
@@ -302,7 +321,7 @@
         const userRes = await supabaseClient.auth.getUser();
         if (userRes.data?.user) {
           currentConnectedUserId = userRes.data.user.id;
-          
+
           try {
             const { data: connectedProfile } = await supabaseClient
               .from('profiles')

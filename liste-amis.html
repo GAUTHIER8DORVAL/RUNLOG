@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="manifest" href="/manifest.json">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RunLog — Mes Amis</title>
@@ -46,17 +44,17 @@
     }
     .tab-btn:hover { color: var(--text); background: #1a1a1f; }
     .tab-btn.active { background: var(--bg); color: var(--accent); }
+    .tab-btn svg { transition: stroke 0.2s; }
     .tab-badge { background: var(--accent); color: var(--bg); font-size: 0.7rem; font-weight: 900; padding: 0.1rem 0.4rem; border-radius: 2px; min-width: 18px; text-align: center; line-height: 1.4; }
     .tab-badge.red { background: #ff4a4a; color: #fff; animation: notif-pulse 2s ease-in-out infinite; }
 
-    /* ── RECHERCHE AUTOCOMPLETE ───────────────────────────────────────── */
     .search-autocomplete-wrap { position: relative; margin-bottom: 2rem; }
     .search-autocomplete-inner {
       display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border);
       transition: border-color 0.2s;
     }
     .search-autocomplete-wrap.focused .search-autocomplete-inner { border-color: var(--accent); }
-    .search-icon-wrap { background: var(--surface); display: flex; align-items: center; padding: 0 1rem; color: var(--muted); font-size: 0.9rem; flex-shrink: 0; }
+    .search-icon-wrap { background: var(--surface); display: flex; align-items: center; padding: 0 1rem; color: var(--muted); flex-shrink: 0; }
     .search-autocomplete-input {
       flex: 1; background: var(--surface); border: none;
       padding: 1rem 1rem 1rem 0; font-family: var(--font-body);
@@ -161,7 +159,7 @@
     .btn-decline:hover { border-color: #ff4a4a; color: #ff4a4a; }
 
     .empty-state { background: var(--surface); border: 1px solid var(--border); padding: 4rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-    .empty-icon { font-size: 3rem; opacity: 0.3; }
+    .empty-icon { opacity: 0.25; color: var(--muted); }
     .empty-title { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
     .empty-sub { font-size: 0.85rem; color: var(--muted); max-width: 280px; line-height: 1.6; }
 
@@ -211,14 +209,33 @@
     </div>
 
     <div class="tabs">
+      <!-- Amis -->
       <button class="tab-btn active" onclick="switchTab('amis')" id="tab-amis">
-        👥 <span id="btn-lbl-amis">Amis</span> <span class="tab-badge" id="badge-amis">0</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span id="btn-lbl-amis">Amis</span>
+        <span class="tab-badge" id="badge-amis">0</span>
       </button>
+      <!-- Demandes -->
       <button class="tab-btn" onclick="switchTab('demandes')" id="tab-demandes">
-        🔔 <span id="btn-lbl-demandes">Demandes</span> <span class="tab-badge red" id="badge-demandes" style="display:none">0</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="btn-lbl-demandes">Demandes</span>
+        <span class="tab-badge red" id="badge-demandes" style="display:none">0</span>
       </button>
+      <!-- Rechercher -->
       <button class="tab-btn" onclick="switchTab('recherche')" id="tab-recherche">
-        🔍 <span id="btn-lbl-recherche">Rechercher</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span id="btn-lbl-recherche">Rechercher</span>
       </button>
     </div>
 
@@ -235,7 +252,12 @@
     <div id="section-recherche" class="section">
       <div class="search-autocomplete-wrap" id="search-wrap">
         <div class="search-autocomplete-inner">
-          <div class="search-icon-wrap">🔍</div>
+          <div class="search-icon-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
           <input
             id="search-input"
             class="search-autocomplete-input"
@@ -256,6 +278,11 @@
   <div id="toast" class="toast"></div>
 
   <script>
+    // ── SVG ICÔNES EMPTY STATE ────────────────────────────────────────────────
+    var svgFriends = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+    var svgBell    = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+    var svgWarn    = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
     var supabaseClient;
     var currentUserId = null;
     var amisExistantsCache = {};
@@ -294,7 +321,7 @@
         toast_req_success: "Friend request sent!", toast_req_exists: "A request already exists.",
         toast_req_err: "Error sending request", toast_remove_success: "Friend removed.",
         toast_remove_err: "Error removing friend",
-        lbl_runs: "Runs", lbl_km: "km", lbl_remove_confirm: "Remove?",
+        lbl_courses: "Races", lbl_km: "km", lbl_remove_confirm: "Remove?",
         lbl_yes: "Yes", lbl_no: "No", btn_accept: "Accept", btn_decline: "Decline",
         empty_friends_title: "No friends yet", empty_friends_sub: "Use the Search tab to find other runners.",
         empty_req_title: "No pending requests", empty_req_sub: "New friend requests will show up here.",
@@ -314,7 +341,7 @@
         toast_req_success: "¡Solicitud de amistad enviada!", toast_req_exists: "Ya existe una solicitud.",
         toast_req_err: "Error al enviar la solicitud", toast_remove_success: "Amigo eliminado.",
         toast_remove_err: "Error al eliminar amigo",
-        lbl_runs: "Carreras", lbl_km: "km", lbl_remove_confirm: "¿Eliminar?",
+        lbl_courses: "Carreras", lbl_km: "km", lbl_remove_confirm: "¿Eliminar?",
         lbl_yes: "Sí", lbl_no: "No", btn_accept: "Aceptar", btn_decline: "Rechazar",
         empty_friends_title: "Sin amigos por ahora", empty_friends_sub: "Utiliza la pestaña Buscar para encontrar otros corredores.",
         empty_req_title: "No hay solicitudes pendientes", empty_req_sub: "Las nuevas solicitudes de amistad aparecerán aquí.",
@@ -563,9 +590,8 @@
       var c = document.getElementById('confirm-'+id);
       if (c) c.classList.toggle('visible');
     }
-    
-    function cancelSuppression(id, e) { e.stopPropagation(); var c = document.getElementById('confirm-'+id); if (c) c.classList.remove('visible'); }
-    function annulerSuppression(id, e) { cancelSuppression(id, e); }
+
+    function annulerSuppression(id, e) { e.stopPropagation(); var c = document.getElementById('confirm-'+id); if (c) c.classList.remove('visible'); }
 
     async function supprimerAmi(id, e) {
       e.stopPropagation();
@@ -582,12 +608,12 @@
         card.style.overflow='hidden'; card.style.maxHeight=card.offsetHeight+'px';
         setTimeout(function(){ card.style.maxHeight='0'; card.style.padding='0'; }, 280);
         setTimeout(function(){
-          card.remove(); 
-          majBadgeAmis(-1); 
+          card.remove();
+          majBadgeAmis(-1);
           delete amisExistantsCache[id];
           var list = document.querySelector('.friends-list');
           if (!list || list.children.length === 0) {
-            document.getElementById('friends-container').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>';
+            document.getElementById('friends-container').innerHTML = '<div class="empty-state"><div class="empty-icon">' + svgFriends + '</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>';
           }
         }, 620);
         showToast(t.toast_remove_success, '');
@@ -604,7 +630,10 @@
         var rows = res.data||[];
         document.getElementById('badge-amis').textContent = rows.length;
         loading.style.display='none'; container.style.display='block';
-        if (rows.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>'; return; }
+        if (rows.length===0) {
+          container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgFriends + '</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>';
+          return;
+        }
         var amiIds = rows.map(function(r){ return r.demandeur_id===currentUserId?r.receveur_id:r.demandeur_id; });
         var profRes = await supabaseClient.from('profiles').select('id,username,date_naissance').in('id',amiIds);
         if (profRes.error) throw profRes.error;
@@ -613,7 +642,11 @@
         var list = document.createElement('div'); list.className='friends-list';
         profiles.forEach(function(p,i){ list.appendChild(creerCarteAmi(p,statsArr[i])); });
         container.innerHTML=''; container.appendChild(list);
-      } catch(e) { loading.style.display='none'; container.style.display='block'; container.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">' + t.err_load + '</div></div>'; console.error(e); }
+      } catch(e) {
+        loading.style.display='none'; container.style.display='block';
+        container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgWarn + '</div><div class="empty-title">' + t.err_load + '</div></div>';
+        console.error(e);
+      }
     }
 
     async function chargerDemandes() {
@@ -627,19 +660,21 @@
         loading.style.display='none'; container.style.display='block';
         var badge = document.getElementById('badge-demandes');
         if (demandes.length>0) { badge.textContent=demandes.length>9?'9+':demandes.length; badge.style.display='inline'; } else { badge.style.display='none'; }
-        if (demandes.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">' + t.empty_req_title + '</div><div class="empty-sub">' + t.empty_req_sub + '</div></div>'; return; }
+        if (demandes.length===0) {
+          container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgBell + '</div><div class="empty-title">' + t.empty_req_title + '</div><div class="empty-sub">' + t.empty_req_sub + '</div></div>';
+          return;
+        }
         var ids = demandes.map(function(d){ return d.demandeur_id; });
         var profRes = await supabaseClient.from('profiles').select('id,username,date_naissance').in('id',ids);
         var profilesMap = {}; (profRes.data||[]).forEach(function(p){ profilesMap[p.id]=p; });
         var list = document.createElement('div'); list.className='requests-list';
-        
+
         demandes.forEach(function(d) {
           var p=profilesMap[d.demandeur_id]||{};
           var initiale=(p.username||'?').charAt(0).toUpperCase();
           var cat=calculerCategorie(p.date_naissance)||'';
           var date=d.created_at?new Date(d.created_at).toLocaleDateString(t.date_format, t.date_options):'';
           var card=document.createElement('div'); card.className='request-card'; card.id='req-'+d.id;
-          
           card.innerHTML='<div class="friend-avatar" style="width:44px;height:44px;font-size:1.1rem">'+initiale+'</div>' +
             '<div class="request-info">' +
               '<div class="request-name">'+escapeHtml(p.username||'Athlète')+'</div>' +
@@ -652,7 +687,11 @@
           list.appendChild(card);
         });
         container.innerHTML=''; container.appendChild(list);
-      } catch(e) { loading.style.display='none'; container.style.display='block'; container.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">' + t.err_load + '</div></div>'; console.error(e); }
+      } catch(e) {
+        loading.style.display='none'; container.style.display='block';
+        container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgWarn + '</div><div class="empty-title">' + t.err_load + '</div></div>';
+        console.error(e);
+      }
     }
 
     async function traiterDemande(relationId, demandeurId, action) {
@@ -660,7 +699,6 @@
       if (!card) return;
       card.querySelectorAll('button').forEach(b => b.disabled = true);
       const t = translations[currentLang];
-
       try {
         if (action === 'accepte') {
           var res = await supabaseClient.from('amis').update({ statut: 'accepte' }).eq('id', relationId);
@@ -671,7 +709,6 @@
           if (res.error) throw res.error;
           delete amisExistantsCache[demandeurId];
         }
-
         card.remove();
         chargerAmis();
         chargerDemandes();
@@ -688,7 +725,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
-      // Configuration de secours si la base de données met du temps à répondre
       var fallbackLang = localStorage.getItem('runlog_lang');
       if (!fallbackLang) {
         var browserLang = navigator.language || navigator.userLanguage;
@@ -711,20 +747,11 @@
         if (authRes.data && authRes.data.user) {
           currentUserId = authRes.data.user.id;
 
-          // Charger la vraie langue préférée de l'utilisateur depuis Supabase
           try {
             const { data: profile } = await supabaseClient
-              .from('profiles')
-              .select('langue')
-              .eq('id', currentUserId)
-              .maybeSingle();
-
-            if (profile && profile.langue) {
-              applyLanguage(profile.langue);
-            }
-          } catch (langErr) {
-            console.error("Impossible de récupérer la langue sur Supabase :", langErr);
-          }
+              .from('profiles').select('langue').eq('id', currentUserId).maybeSingle();
+            if (profile && profile.langue) applyLanguage(profile.langue);
+          } catch (langErr) { console.error(langErr); }
 
           await chargerRelationsExistantes();
           await chargerAmis();
