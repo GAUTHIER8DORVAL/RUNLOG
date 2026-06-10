@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ajouter une course — RunLog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0f; --surface: #141418; --border: #222228;
+      --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; padding-bottom: 80px; }
+
+    /* --- NAVIGATION ORDINATEUR --- */
+    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; flex: 1; }
+    .logo span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    nav::after { content: ''; flex: 1; display: block; }
+
+    /* --- NAVIGATION BASSE (MOBILE) --- */
+    .app-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 68px; background: rgba(20,20,24,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: none; grid-template-columns: repeat(4, 1fr); z-index: 999; padding-bottom: env(safe-area-inset-bottom); }
+    .app-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-family: var(--font-head); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; gap: 4px; transition: color 0.2s; }
+    .app-nav-item svg { width: 22px; height: 22px; fill: currentColor; transition: transform 0.2s; }
+    .app-nav-item.active { color: var(--accent); font-weight: 700; }
+    .app-nav-item:active svg { transform: scale(0.9); }
+
+    /* --- CONTENU --- */
+    .page-header { padding: 9rem 4rem 4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+    .page-header::after { content: 'NEW'; position: absolute; right: -0.02em; bottom: -.15em; font-family: var(--font-head); font-weight: 900; font-size: clamp(8rem, 20vw, 20rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
+    .page-tag { font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+    .page-tag::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--accent); }
+    h1 { font-family: var(--font-head); font-weight: 900; font-size: clamp(3rem, 6vw, 5.5rem); line-height: .95; text-transform: uppercase; position: relative; z-index: 1; }
+    h1 span { color: var(--accent); }
+
+    .main { padding: 4rem; max-width: 860px; margin: 0 auto; }
+
+    /* --- FORMULAIRE --- */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2rem; }
+    .form-field { background: var(--surface); padding: 1.5rem; display: flex; flex-direction: column; gap: .6rem; }
+    .form-field.full { grid-column: 1 / -1; }
+    label { font-family: var(--font-head); font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+    input { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; color: var(--text); font-family: var(--font-body); font-size: 1rem; padding: .7rem 1rem; transition: border-color .2s; width: 100%; -webkit-appearance: none; }
+    input:focus { outline: none; border-color: var(--accent); }
+    
+    .field-help { font-size: 0.75rem; color: var(--muted); margin-top: -0.2rem; }
+
+    .type-toggle { display: flex; gap: 1px; background: var(--border); }
+    .type-btn { flex: 1; padding: .7rem; font-family: var(--font-head); font-weight: 700; font-size: .85rem; letter-spacing: .15em; text-transform: uppercase; background: var(--bg); color: var(--muted); border: none; cursor: pointer; transition: all .2s; }
+    .type-btn.active-trail { background: rgba(232,255,71,.15); color: var(--accent); }
+    .type-btn.active-route { background: rgba(255,107,53,.15); color: var(--accent2); }
+
+    /* --- APERÇU --- */
+    .preview { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 1.5rem 2rem; margin-bottom: 2rem; display: none; }
+    .preview-title { font-family: var(--font-head); font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .preview-race { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .preview-rank { font-family: var(--font-head); font-weight: 900; font-size: 2.5rem; color: var(--accent); }
+    .preview-info { flex: 1; }
+    .preview-name { font-family: var(--font-head); font-weight: 700; font-size: 1.3rem; text-transform: uppercase; }
+    .preview-meta { font-size: .85rem; color: var(--muted); margin-top: .2rem; }
+    .preview-badge { font-family: var(--font-head); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; padding: .3rem .8rem; border-radius: 2px; }
+    .badge-trail { background: rgba(232,255,71,.1); color: var(--accent); }
+    .badge-route { background: rgba(255,107,53,.1); color: var(--accent2); }
+    .preview-stats { display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 1.2rem; }
+    .preview-stat { display: flex; flex-direction: column; gap: .2rem; }
+    .preview-stat-val { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; }
+    .preview-stat-lbl { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+
+    /* --- ACTIONS / VALIDATION --- */
+    .submit-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 2rem; }
+    .btn-submit { font-family: var(--font-head); font-weight: 700; font-size: 1rem; letter-spacing: .15em; text-transform: uppercase; padding: 1rem 2.5rem; border-radius: 2px; cursor: pointer; border: 2px solid var(--accent); background: var(--accent); color: #0d0d0f; transition: all .2s; width: 100%; text-align: center; }
+    .btn-submit:hover { background: transparent; color: var(--accent); }
+    .btn-submit:disabled { opacity: .4; cursor: not-allowed; }
+    .error-msg, .success-msg { font-family: var(--font-head); font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; padding: .8rem 1.2rem; border-radius: 2px; display: none; width: 100%; }
+    .error-msg   { background: rgba(255,100,100,.1); color: #ff6464; }
+    .success-msg { background: rgba(100,255,100,.1); color: #64ff64; }
+
+    footer { padding: 3rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .footer-logo { font-family: var(--font-head); font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+    .footer-logo span { color: var(--accent); }
+
+    /* --- RESPONSIVE / DESIGN APPLICATION MOBILE --- */
+    @media (max-width: 768px) {
+      nav { padding: 0 1rem; height: 60px; justify-content: center; }
+      nav ul, nav::after { display: none; }
+      .logo { flex: initial; font-size: 1.2rem; }
+
+      .app-bottom-nav { display: grid; }
+
+      .page-header { padding: 6rem 1.2rem 2rem; border-bottom: none; }
+      .page-header::after { display: none; }
+      .page-tag { font-size: 0.75rem; margin-bottom: 0.5rem; }
+      h1 { font-size: 2.4rem; }
+
+      .main { padding: 1rem 1.2rem 3rem; }
+      .form-grid { grid-template-columns: 1fr; gap: 12px; background: transparent; border: none; margin-bottom: 1.5rem; }
+      .form-field { background: var(--surface); padding: 1.2rem; border: 1px solid var(--border); border-radius: 6px; }
+      .form-field.full { grid-column: 1; }
+      
+      input { padding: 0.8rem; font-size: 1rem; border-radius: 4px; }
+      
+      .preview { padding: 1.2rem; margin-bottom: 1.5rem; border-radius: 0 6px 6px 0; }
+      .preview-stats { gap: 1.2rem; }
+      .preview-rank { font-size: 2rem; }
+
+      .btn-submit { padding: 1.1rem; font-size: 0.95rem; }
+      footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <ul>
+      <li><a href="index.html" id="nav-home">Accueil</a></li>
+      <li><a href="courses.html" id="nav-runs">Courses</a></li>
+      <li><a href="stats.html" id="nav-stats">Stats</a></li>
+      <li><a href="profile.html" id="nav-profile">Profil</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-tag" id="page-tag">Nouvelle entrée</div>
+    <h1 id="page-title">Ajouter une <span>course</span></h1>
+  </div>
+
+  <div class="main">
+    <div class="form-grid">
+      <div class="form-field full">
+        <label id="lbl-nom">Nom de la course *</label>
+        <input type="text" id="f-nom" placeholder="Trail des Crêtes" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-lieu">Lieu *</label>
+        <input type="text" id="f-lieu" placeholder="Vosges" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-date">Date *</label>
+        <input type="date" id="f-date" oninput="updatePreview()" />
+      </div>
+      <div class="form-field full">
+        <label id="lbl-type">Type *</label>
+        <div class="type-toggle">
+          <button class="type-btn active-trail" id="btn-trail" onclick="setType('Trail')">🏔 Trail</button>
+          <button class="type-btn" id="btn-route" onclick="setType('Route')">🏙 Route</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label id="lbl-dist">Distance (km) *</label>
+        <input type="number" step="any" id="f-dist" placeholder="42.195" min="0.1" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-dplus">Dénivelé D+ (m)</label>
+        <input type="number" id="f-dplus" placeholder="1800" min="0" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-temps">Temps chrono *</label>
+        <input type="text" id="f-temps" placeholder="05:12:34" pattern="^[0-9]{1,2}:[0-5][0-9]:[0-5][0-9]$" oninput="updatePreview()" />
+        <span class="field-help" id="lbl-help-temps">Format requis : HH:MM:SS (ex: 01:23:45)</span>
+      </div>
+      <div class="form-field">
+        <label id="lbl-part">Nombre de participants *</label>
+        <input type="number" id="f-participants" placeholder="650" min="1" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-clt">Classement général *</label>
+        <input type="number" id="f-classement" placeholder="3" min="1" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-cat">Catégorie (ex: M0, SEF…)</label>
+        <input type="text" id="f-cat" placeholder="M0" oninput="updatePreview()" />
+      </div>
+      <div class="form-field">
+        <label id="lbl-cltcat">Classement catégorie *</label>
+        <input type="number" id="f-classementcat" placeholder="1" min="1" oninput="updatePreview()" />
+      </div>
+    </div>
+
+    <div class="preview" id="preview">
+      <div class="preview-title" id="prev-title-lbl">Aperçu de ta course</div>
+      <div class="preview-race">
+        <div class="preview-rank" id="prev-rank">—</div>
+        <div class="preview-info">
+          <div class="preview-name" id="prev-nom">—</div>
+          <div class="preview-meta" id="prev-meta">—</div>
+        </div>
+        <span class="preview-badge" id="prev-badge">—</span>
+      </div>
+      <div class="preview-stats">
+        <div class="preview-dist"><div class="preview-stat-val" id="prev-dist">—</div><div class="preview-stat-lbl" id="lbl-prev-dist">Distance</div></div>
+        <div class="preview-stat"><div class="preview-stat-val" id="prev-dplus">—</div><div class="preview-stat-lbl">D+</div></div>
+        <div class="preview-stat"><div class="preview-stat-val" id="prev-temps">—</div><div class="preview-stat-lbl" id="lbl-prev-time">Temps</div></div>
+        <div class="preview-stat"><div class="preview-stat-val" id="prev-pct">—</div><div class="preview-stat-lbl" id="lbl-prev-pct">% devancés</div></div>
+        <div class="preview-stat"><div class="preview-stat-val" id="prev-cat">—</div><div class="preview-stat-lbl" id="lbl-prev-cltcat">Clt. Cat.</div></div>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn-submit" id="btn-save" onclick="submitCourse()">🏁 Enregistrer la course</button>
+      <div class="error-msg"   id="error-msg"></div>
+      <div class="success-msg" id="success-msg"></div>
+    </div>
+  </div>
+
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-nav-item">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Accueil</span>
+    </a>
+    <a href="courses.html" class="app-nav-item active">
+      <svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v5.1h2v-6.2l-2.1-2 1-4.8c1.8 2.1 4.3 3.5 7.2 3.5v-2c-2.4 0-4.5-1.2-5.7-3l-1-2.4c-.4-1-1.4-1.7-2.6-1.7-.6 0-1.1.1-1.6.4L4 9.1v5.4h2V11l2.1-.9-1.2 5.9L2.2 19l.7 1.9 6.2-2.3 4.3 2.1.5-1.9-4-1.4z"/></svg>
+      <span>Courses</span>
+    </a>
+    <a href="stats.html" class="app-nav-item">
+      <svg viewBox="0 0 24 24"><path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z"/></svg>
+      <span>Stats</span>
+    </a>
+    <a href="profile.html" class="app-nav-item">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <span>Profil</span>
+    </a>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Run<span>Log</span></div>
+    <div id="footer-credit">Fait avec ❤️</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var currentUser = null;
+    var selectedType = 'Trail';
+    var currentLang = 'fr';
+
+    const translations = {
+      fr: {
+        nav_home: "Accueil", nav_runs: "Courses", nav_stats: "Stats", nav_profile: "Profil",
+        page_tag: "Nouvelle entrée", page_title: "Ajouter une <span>course</span>",
+        lbl_nom: "Nom de la course *", lbl_lieu: "Lieu *", lbl_date: "Date *", lbl_type: "Type *",
+        lbl_dist: "Distance (km) *", lbl_dplus: "Dénivelé D+ (m)", lbl_temps: "Temps chrono *",
+        lbl_help_temps: "Format requis : HH:MM:SS (ex: 01:23:45)", lbl_part: "Nombre de participants *",
+        lbl_clt: "Classement général *", lbl_cat: "Catégorie (ex: M0, SEF…)", lbl_cltcat: "Classement catégorie *",
+        prev_title: "Aperçu de ta course", lbl_prev_dist: "Distance", lbl_prev_time: "Temps", lbl_prev_pct: "% devancés", lbl_prev_cltcat: "Clt. Cat.",
+        btn_save: "🏁 Enregistrer la course", btn_saving: "⏳ Enregistrement…",
+        err_fields: "⚠️ Remplis tous les champs obligatoires (*)", err_format: "⚠️ Le format du temps est incorrect. Utilise HH:MM:SS (ex: 04:15:30)",
+        err_session: "⚠️ Session expirée, reconnecte-toi", success_added: "✅ \"{name}\" ajoutée ! Redirection…",
+        footer_credit: "Fait avec ❤️", locale: "fr-FR"
+      },
+      en: {
+        nav_home: "Home", nav_runs: "Runs", nav_stats: "Stats", nav_profile: "Profile",
+        page_tag: "New entry", page_title: "Add a <span>race</span>",
+        lbl_nom: "Race Name *", lbl_lieu: "Location *", lbl_date: "Date *", lbl_type: "Type *",
+        lbl_dist: "Distance (km) *", lbl_dplus: "Elevation Gain D+ (m)", lbl_temps: "Chrono Time *",
+        lbl_help_temps: "Required format: HH:MM:SS (e.g., 01:23:45)", lbl_part: "Number of participants *",
+        lbl_clt: "Overall rank *", lbl_cat: "Category (e.g., M0, SEF…)", lbl_cltcat: "Category rank *",
+        prev_title: "Your race preview", lbl_prev_dist: "Distance", lbl_prev_time: "Time", lbl_prev_pct: "% beaten", lbl_prev_cltcat: "Cat. Rank",
+        btn_save: "🏁 Save race", btn_saving: "⏳ Saving…",
+        err_fields: "⚠️ Please fill in all required fields (*)", err_format: "⚠️ Incorrect time format. Use HH:MM:SS (e.g., 04:15:30)",
+        err_session: "⚠️ Session expired, please log in again", success_added: "✅ \"{name}\" added! Redirecting…",
+        footer_credit: "Made with ❤️", locale: "en-US"
+      },
+      es: {
+        nav_home: "Inicio", nav_runs: "Carreras", nav_stats: "Estadísticas", nav_profile: "Perfil",
+        page_tag: "Nueva entrada", page_title: "Añadir une <span>carrera</span>",
+        lbl_nom: "Nombre de la carrera *", lbl_lieu: "Lugar *", lbl_date: "Date *", lbl_type: "Tipo *",
+        lbl_dist: "Distancia (km) *", lbl_dplus: "Desnivel D+ (m)", lbl_temps: "Tiempo crono *",
+        lbl_help_temps: "Formato requerido: HH:MM:SS (ej: 01:23:45)", lbl_part: "Número de participantes *",
+        lbl_clt: "Clasificación general *", lbl_cat: "Categoría (ej: M0, SEF…)", lbl_cltcat: "Clasificación categoría *",
+        prev_title: "Vista previa de tu carrera", lbl_prev_dist: "Distancia", lbl_prev_time: "Tiempo", lbl_prev_pct: "% superado", lbl_prev_cltcat: "Clas. Cat.",
+        btn_save: "🏁 Registrar carrera", btn_saving: "⏳ Guardando…",
+        err_fields: "⚠️ Por favor, rellena todos los campos obligatorios (*)", err_format: "⚠️ El formato de tiempo es incorrecto. Usa HH:MM:SS (ej: 04:15:30)",
+        err_session: "⚠️ Sesión expirada, vuelve a iniciar sesión", success_added: "✅ ¡\"{name}\" añadida! Redirigiendo…",
+        footer_credit: "Hecho con ❤️", locale: "es-ES"
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
+      const t = translations[currentLang];
+
+      document.title = (currentLang === 'fr' ? "Ajouter une course" : currentLang === 'es' ? "Añadir una carrera" : "Add a race") + " — RunLog";
+
+      if(document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
+      if(document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
+      if(document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
+      if(document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
+
+      if(document.getElementById('page-tag')) document.getElementById('page-tag').textContent = t.page_tag;
+      if(document.getElementById('page-title')) document.getElementById('page-title').innerHTML = t.page_title;
+
+      if(document.getElementById('lbl-nom')) document.getElementById('lbl-nom').textContent = t.lbl_nom;
+      if(document.getElementById('lbl-lieu')) document.getElementById('lbl-lieu').textContent = t.lbl_lieu;
+      if(document.getElementById('lbl-date')) document.getElementById('lbl-date').textContent = t.lbl_date;
+      if(document.getElementById('lbl-type')) document.getElementById('lbl-type').textContent = t.lbl_type;
+      if(document.getElementById('lbl-dist')) document.getElementById('lbl-dist').textContent = t.lbl_dist;
+      if(document.getElementById('lbl-dplus')) document.getElementById('lbl-dplus').textContent = t.lbl_dplus;
+      if(document.getElementById('lbl-temps')) document.getElementById('lbl-temps').textContent = t.lbl_temps;
+      if(document.getElementById('lbl-help-temps')) document.getElementById('lbl-help-temps').textContent = t.lbl_help_temps;
+      if(document.getElementById('lbl-part')) document.getElementById('lbl-part').textContent = t.lbl_part;
+      if(document.getElementById('lbl-clt')) document.getElementById('lbl-clt').textContent = t.lbl_clt;
+      if(document.getElementById('lbl-cat')) document.getElementById('lbl-cat').textContent = t.lbl_cat;
+      if(document.getElementById('lbl-cltcat')) document.getElementById('lbl-cltcat').textContent = t.lbl_cltcat;
+
+      if(document.getElementById('prev-title-lbl')) document.getElementById('prev-title-lbl').textContent = t.prev_title;
+      if(document.getElementById('lbl-prev-dist')) document.getElementById('lbl-prev-dist').textContent = t.lbl_prev_dist;
+      if(document.getElementById('lbl-prev-time')) document.getElementById('lbl-prev-time').textContent = t.lbl_prev_time;
+      if(document.getElementById('lbl-prev-pct')) document.getElementById('lbl-prev-pct').textContent = t.lbl_prev_pct;
+      if(document.getElementById('lbl-prev-cltcat')) document.getElementById('lbl-prev-cltcat').textContent = t.lbl_prev_cltcat;
+
+      if(document.getElementById('btn-save') && document.getElementById('btn-save').textContent.indexOf('…') === -1) {
+        document.getElementById('btn-save').textContent = t.btn_save;
+      }
+      if(document.getElementById('footer-credit')) document.getElementById('footer-credit').textContent = t.footer_credit;
+
+      updatePreview();
+    }
+
+    function calculerCategorieFFA(dateNaissanceStr) {
+      if (!dateNaissanceStr) return "";
+      const dateNaiss = new Date(dateNaissanceStr);
+      const anneeNaiss = dateNaiss.getFullYear();
+      const anneeEnCours = new Date().getFullYear();
+      const ageAu31Dec = anneeEnCours - anneeNaiss;
+
+      if (ageAu31Dec < 14) return "BEN/MIN";
+      if (ageAu31Dec === 14 || ageAu31Dec === 15) return "MI";
+      if (ageAu31Dec === 16 || ageAu31Dec === 17) return "CA";
+      if (ageAu31Dec === 18 || ageAu31Dec === 19) return "JU";
+      if (ageAu31Dec >= 20 && ageAu31Dec <= 22) return "ES";
+      if (ageAu31Dec >= 23 && ageAu31Dec <= 34) return "SE";
+      if (ageAu31Dec >= 35 && ageAu31Dec <= 39) return "M0";
+      if (ageAu31Dec >= 40 && ageAu31Dec <= 44) return "M1";
+      if (ageAu31Dec >= 45 && ageAu31Dec <= 49) return "M2";
+      if (ageAu31Dec >= 50 && ageAu31Dec <= 54) return "M3";
+      if (ageAu31Dec >= 55 && ageAu31Dec <= 59) return "M4";
+      if (ageAu31Dec >= 60 && ageAu31Dec <= 64) return "M5";
+      if (ageAu31Dec >= 65 && ageAu31Dec <= 69) return "M6";
+      return "M7";
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var fallbackLang = localStorage.getItem('runlog_lang') || (navigator.language || navigator.userLanguage).split('-')[0];
+      applyLanguage(fallbackLang);
+
+      var dateField = document.getElementById('f-date');
+      if (dateField) {
+        dateField.value = new Date().toISOString().split('T')[0];
+      }
+
+      supabaseClient.auth.getUser().then(async function(res) {
+        if (!res.data.user) { 
+          window.location.href = 'profile.html'; 
+        } else { 
+          currentUser = res.data.user; 
+          try {
+            const { data: profile } = await supabaseClient
+              .from('profiles')
+              .select('date_naissance, langue')
+              .eq('id', currentUser.id)
+              .maybeSingle();
+
+            if (profile) {
+              if (profile.langue) {
+                applyLanguage(profile.langue);
+              }
+              if (profile.date_naissance) {
+                const catAuto = calculerCategorieFFA(profile.date_naissance);
+                var catField = document.getElementById('f-cat');
+                if (catAuto && catField) {
+                  catField.value = catAuto;
+                  updatePreview();
+                }
+              }
+            }
+          } catch(e) {
+            console.error(e);
+          }
+        }
+      });
+    });
+
+    function setType(t) {
+      selectedType = t;
+      document.getElementById('btn-trail').className = 'type-btn' + (t === 'Trail' ? ' active-trail' : '');
+      document.getElementById('btn-route').className = 'type-btn' + (t === 'Route' ? ' active-route' : '');
+      updatePreview();
+    }
+
+    function formatDate(iso) {
+      var d = new Date(iso);
+      return d.toLocaleDateString(translations[currentLang].locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function updatePreview() {
+      if(!document.getElementById('f-nom')) return;
+
+      var nom    = document.getElementById('f-nom').value;
+      var lieu   = document.getElementById('f-lieu').value;
+      var date   = document.getElementById('f-date').value;
+      var dist   = document.getElementById('f-dist').value;
+      var dplus  = document.getElementById('f-dplus').value;
+      var temps  = document.getElementById('f-temps').value;
+      var part   = document.getElementById('f-participants').value;
+      var clt    = document.getElementById('f-classement').value;
+      var cat    = document.getElementById('f-cat').value;
+      var cltcat = document.getElementById('f-classementcat').value;
+
+      if (!nom && !dist) { document.getElementById('preview').style.display = 'none'; return; }
+      document.getElementById('preview').style.display = 'block';
+
+      document.getElementById('prev-rank').textContent = clt || '—';
+      document.getElementById('prev-nom').textContent  = nom || '—';
+      document.getElementById('prev-meta').textContent = (date ? formatDate(date) : '—') + ' · ' + (lieu || '—');
+      var badge = document.getElementById('prev-badge');
+      badge.textContent = selectedType;
+      badge.className = 'preview-badge badge-' + selectedType.toLowerCase();
+      document.getElementById('prev-dist').textContent  = dist ? dist + 'km' : '—';
+      document.getElementById('prev-dplus').textContent = dplus ? dplus + 'm' : '—';
+      document.getElementById('prev-temps').textContent = temps || '—';
+      
+      var suffix = currentLang === 'fr' ? 'e' : currentLang === 'es' ? 'º' : 'th';
+      if(cltcat && parseInt(cltcat) === 1) suffix = currentLang === 'fr' ? 'er' : currentLang === 'es' ? 'º' : 'st';
+      if(cltcat && parseInt(cltcat) === 2 && currentLang === 'en') suffix = 'nd';
+      if(cltcat && parseInt(cltcat) === 3 && currentLang === 'en') suffix = 'rd';
+
+      document.getElementById('prev-cat').textContent   = cltcat ? cltcat + suffix + ' ' + (cat || '') : '—';
+      if (part && clt) {
+        var pct = Math.round(((parseInt(part) - parseInt(clt)) / parseInt(part)) * 1000) / 10;
+        document.getElementById('prev-pct').textContent = pct + '%';
+      } else {
+        document.getElementById('prev-pct').textContent = '—';
+      }
+    }
+
+    async function submitCourse() {
+      var nom         = document.getElementById('f-nom').value.trim();
+      var lieu        = document.getElementById('f-lieu').value.trim();
+      var date        = document.getElementById('f-date').value;
+      
+      var distInput   = document.getElementById('f-dist').value;
+      var dist        = parseFloat(String(distInput).replace(',', '.')) || 0;
+      
+      var dplus       = parseInt(document.getElementById('f-dplus').value) || 0;
+      var temps       = document.getElementById('f-temps').value.trim();
+      var part        = parseInt(document.getElementById('f-participants').value);
+      var clt         = parseInt(document.getElementById('f-classement').value);
+      var cat         = document.getElementById('f-cat').value.trim();
+      var cltcat      = parseInt(document.getElementById('f-classementcat').value);
+      var btn  = document.getElementById('btn-save');
+      var err  = document.getElementById('error-msg');
+      var succ = document.getElementById('success-msg');
+      
+      const t = translations[currentLang];
+      err.style.display = 'none'; succ.style.display = 'none';
+
+      if (!nom || !lieu || !date || !dist || !temps || !part || !clt || !cltcat) {
+        err.style.display = 'block';
+        err.textContent = t.err_fields;
+        return;
+      }
+
+      var regexTemps = /^[0-9]{1,2}:[0-5][0-9]:[0-5][0-9]$/;
+      if (!regexTemps.test(temps)) {
+        err.style.display = 'block';
+        err.textContent = t.err_format;
+        return;
+      }
+
+      if (!currentUser) {
+        err.style.display = 'block';
+        err.textContent = t.err_session;
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = t.btn_saving;
+
+      var annee = new Date(date).getFullYear();
+      var dateStr = formatDate(date);
+
+      var res = await supabaseClient.from('courses').insert([{
+        user_id:        currentUser.id,
+        user_name:      (currentUser.user_metadata && currentUser.user_metadata.username) || currentUser.email,
+        annee:          annee,
+        date:           dateStr,
+        nom:            nom,
+        lieu:           lieu,
+        type:           selectedType,
+        dist:           dist,
+        dplus:          dplus,
+        temps:          temps,
+        participants:   part,
+        classement:     clt,
+        classement_cat: cltcat,
+        cat:            cat
+      }]);
+
+      if (res.error) {
+        err.style.display = 'block';
+        err.textContent = '❌ ' + res.error.message;
+        btn.disabled = false;
+        btn.textContent = t.btn_save;
+      } else {
+        succ.style.display = 'block';
+        succ.textContent = t.success_added.replace('{name}', nom);
+        setTimeout(function() { window.location.href = 'courses.html'; }, 1800);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mes Courses — RunLog</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -13,198 +15,590 @@
       --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+
+    /* --- NAVIGATION ORDINATEUR --- */
     nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
     .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
     nav a:hover, nav a.active { color: var(--accent); }
+    .nav-actions { flex: 1; display: flex; justify-content: flex-end; }
+    .btn-add { font-family: var(--font-head); font-weight: 700; font-size: .85rem; letter-spacing: .15em; text-transform: uppercase; padding: .5rem 1.2rem; border-radius: 2px; background: var(--accent); color: #0d0d0f; text-decoration: none; transition: all .2s; border: 2px solid var(--accent); }
+    .btn-add:hover { background: transparent; color: var(--accent); }
+
+    /* --- RECHERCHE --- */
+    .nav-search-container { position: relative; width: 180px; }
+    .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; padding: 0.4rem 1rem 0.4rem 2.2rem; transition: all .2s; }
+    .search-input:focus { outline: none; border-color: var(--accent); background: #1a1a22; width: 220px; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; }
+    .search-results { position: absolute; top: calc(100% + 10px); left: 0; width: 260px; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 110; }
+    .search-result-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 1rem; background: var(--surface); border-left: 3px solid transparent; text-decoration: none; color: var(--text); transition: border-color .2s, background .2s; }
+    .search-result-row:hover { background: #18181e; border-left-color: var(--accent); }
+    .athlete-avatar { width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 0.9rem; color: var(--accent); flex-shrink: 0; }
+    .athlete-pseudo { font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: .05em; }
+    .athlete-meta { font-size: .7rem; color: var(--muted); }
+    .athlete-arrow { margin-left: auto; display: flex; align-items: center; }
+    .search-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+
+    /* --- BARRE DE NAVIGATION MOBILE (BAS) --- */
+    .app-bottom-nav { display: none; }
+
+    /* --- BOUTON FLOTTANT MOBILE --- */
+    .fab { display: none; }
+
+    /* --- PAGE HEADER --- */
     .page-header { padding: 9rem 4rem 4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
-    .page-header::after { content: 'COURSES'; position: absolute; right: -0.02em; bottom: -.15em; font-family: var(--font-head); font-weight: 900; font-size: clamp(8rem, 18vw, 18rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
+    .page-header::after { content: 'RACES'; position: absolute; right: -0.02em; bottom: -.15em; font-family: var(--font-head); font-weight: 900; font-size: clamp(8rem, 20vw, 20rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
     .page-tag { font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
     .page-tag::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--accent); }
     h1 { font-family: var(--font-head); font-weight: 900; font-size: clamp(3rem, 6vw, 5.5rem); line-height: .95; text-transform: uppercase; position: relative; z-index: 1; }
     h1 span { color: var(--accent); }
-    .filters { padding: 2rem 4rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .filter-label { font-family: var(--font-head); font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
-    .filter-btn { font-family: var(--font-head); font-weight: 700; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; padding: .5rem 1.2rem; border-radius: 2px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .2s; }
-    .filter-btn:hover { border-color: var(--muted); color: var(--text); }
-    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0d0d0f; }
-    .filter-sep { width: 1px; height: 24px; background: var(--border); margin: 0 .5rem; }
-    main { padding: 2rem 4rem 6rem; }
-    .results-count { font-family: var(--font-head); font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; }
-    .results-count strong { color: var(--accent); }
-    .table-wrap { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; }
-    thead th { font-family: var(--font-head); font-size: .75rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding: .85rem 1rem; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
-    .th-rank { width: 60px; text-align: center; }
-    .th-nom { width: 200px; }
-    .th-type { width: 80px; }
-    .th-date { width: 130px; }
-    .th-dist { width: 90px; text-align: right; }
-    .th-dplus { width: 80px; text-align: right; }
-    .th-temps { width: 100px; text-align: right; }
-    .th-part { width: 120px; text-align: right; }
-    .th-cat { width: 110px; text-align: center; }
-    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
-    tbody tr:hover { background: var(--surface); }
-    td { padding: 1rem; vertical-align: middle; white-space: nowrap; }
-    .rank-pill { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 1.2rem; min-width: 2.2rem; height: 2.2rem; padding: 0 .4rem; border-radius: 2px; background: var(--surface); color: var(--muted); }
-    .rank-pill.gold { background: rgba(255,215,0,.15); color: #ffd700; }
-    .rank-pill.silver { background: rgba(192,192,192,.15); color: #c0c0c0; }
-    .rank-pill.bronze { background: rgba(205,127,50,.15); color: #cd7f32; }
-    .rank-pill.top10 { background: rgba(232,255,71,.1); color: var(--accent); }
-    .race-name { font-family: var(--font-head); font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: .04em; white-space: normal; }
-    .race-location { font-size: .75rem; color: var(--muted); font-weight: 300; margin-top: .1rem; }
-    .badge { font-family: var(--font-head); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; padding: .25rem .6rem; border-radius: 2px; display: inline-block; }
+
+    /* --- CONTENU --- */
+    .content { padding: 4rem; }
+    .races-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .race-row { display: grid; grid-template-columns: 70px 1fr 90px 100px 100px 110px; align-items: center; gap: 1.5rem; padding: 1.4rem 2rem; background: var(--surface); border-left: 3px solid transparent; transition: border-color .2s, background .2s; color: var(--text); cursor: pointer; }
+    .race-row:hover { background: #18181e; border-left-color: var(--accent); }
+    .race-rank { font-family: var(--font-head); font-weight: 900; font-size: 2rem; color: var(--muted); text-align: center; }
+    .race-rank.podium { color: var(--accent); }
+    .race-name { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+    .race-meta { font-size: .8rem; color: var(--muted); }
+    .badge { font-family: var(--font-head); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; padding: .3rem .8rem; border-radius: 2px; text-align: center; }
     .badge-trail { background: rgba(232,255,71,.1); color: var(--accent); }
     .badge-route { background: rgba(255,107,53,.1); color: var(--accent2); }
-    .td-num { font-family: var(--font-head); font-weight: 700; font-size: 1rem; }
-    .td-num small { font-weight: 300; font-size: .72rem; color: var(--muted); }
-    .td-muted { color: var(--muted); font-size: .88rem; }
-    .td-r { text-align: right; }
-    .td-c { text-align: center; }
-    .dplus { color: var(--accent2); }
-    .no-results { text-align: center; padding: 5rem 2rem; font-family: var(--font-head); font-size: 1.5rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); display: none; }
-    footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .8rem; }
+    .race-dist { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; text-align: right; }
+    .race-dist small { font-weight: 300; font-size: .75rem; color: var(--muted); margin-left: 0.1rem; }
+    .race-time { font-family: var(--font-head); font-size: 1rem; color: var(--muted); text-align: right; }
+    .race-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+    .btn-action { background: var(--bg); border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: .5rem; border-radius: 2px; transition: all .2s; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; position: relative; z-index: 10; }
+    .btn-action svg { pointer-events: none; }
+    .btn-action:hover { color: var(--text); border-color: var(--muted); }
+    .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-edit:hover svg { stroke: var(--accent); }
+    .btn-delete:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(255,107,53,0.05); }
+    .btn-delete:hover svg { stroke: var(--accent2); }
+
+    /* --- MODAL --- */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13,13,15,.9); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; padding: 2rem; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 550px; padding: 2.5rem; border-radius: 4px; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-content h2 { font-family: var(--font-head); font-weight: 900; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.5rem; }
+    .modal-content h2 span { color: var(--accent); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .full-width { grid-column: span 2; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-family: var(--font-head); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-group input, .form-group select { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: .7rem .9rem; color: var(--text); font-family: var(--font-body); font-size: 0.9rem; border-radius: 2px; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .btn-submit { font-family: var(--font-head); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; padding: .8rem 1.5rem; border: none; cursor: pointer; border-radius: 2px; flex: 1; }
+    .btn-submit-save { background: var(--accent); color: #0d0d0f; border: 2px solid var(--accent); }
+    .btn-submit-save:hover { background: transparent; color: var(--accent); }
+    .btn-submit-close { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-submit-close:hover { border-color: var(--text); color: var(--text); }
+    .msg-modal { padding: .8rem; border-radius: 2px; margin-bottom: 1rem; font-size: 0.85rem; display: none; background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid var(--accent2); }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .8rem; margin-top: 4rem; }
     .footer-logo { font-family: var(--font-head); font-weight: 900; font-size: 1rem; letter-spacing: .1em; text-transform: uppercase; }
     .footer-logo span { color: var(--accent); }
-    @media(max-width:900px) {
-      nav { padding: 1rem 1.5rem; } nav ul { gap: 1.5rem; }
-      .page-header { padding: 7rem 1.5rem 3rem; } .filters { padding: 1.5rem; } main { padding: 1.5rem 1rem 4rem; }
-      footer { flex-direction: column; gap: .5rem; text-align: center; padding: 1.5rem; }
+    .footer-credit { display: flex; align-items: center; gap: .4rem; }
+    .footer-credit svg { flex-shrink: 0; }
+
+    /* --- RESPONSIVE MOBILE APP --- */
+    @media(max-width:900px){
+      /* Barre du haut */
+      nav {
+        padding: 0.8rem 1.2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-left-group { width: 100%; justify-content: space-between; gap: 1rem; }
+      nav ul { display: none !important; }
+      .nav-actions { display: none; }
+      .nav-search-container { width: 140px; }
+      .search-input:focus { width: 160px; }
+      .search-results { right: 0; left: auto; width: 240px; }
+
+      /* Header & contenu */
+      .page-header { padding: 5rem 1.2rem 2rem; }
+      .page-header::after { display: none; }
+      .content { padding: 1.5rem 1.2rem 7rem 1.2rem; }
+
+      /* Lignes de course mobile */
+      .race-row { grid-template-columns: 44px 1fr auto; gap: 0.8rem; padding: 0.9rem 1rem; }
+      .race-rank { font-size: 1.4rem; }
+      .badge { display: none; }
+      .race-dist { font-size: 1rem; }
+      .race-dist small { display: inline; }
+      .race-time { display: none; }
+      .race-actions { gap: 0.4rem; }
+      .btn-action { width: 32px; height: 32px; }
+
+      /* Bouton flottant + Ajouter */
+      .fab {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 84px; /* au-dessus de la bottom nav */
+        right: 1.2rem;
+        width: 52px;
+        height: 52px;
+        background: var(--accent);
+        color: #0d0d0f;
+        border-radius: 50%;
+        font-size: 1.6rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(232,255,71,0.35);
+        z-index: 500;
+        transition: transform .2s, box-shadow .2s;
+        line-height: 1;
+      }
+      .fab:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(232,255,71,0.2); }
+
+      footer { flex-direction: column; gap: .5rem; text-align: center; padding: 2rem 1.2rem 7rem 1.2rem; }
+
+      /* Modal plein écran sur mobile */
+      .modal { padding: 0; align-items: flex-end; }
+      .modal-content { max-width: 100%; border-radius: 12px 12px 0 0; padding: 1.8rem 1.2rem; max-height: 92vh; }
+      .form-grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: span 1; }
+
+      /* Barre de navigation bas */
+      .app-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 68px;
+        background: rgba(20, 20, 24, 0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .app-bottom-nav-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 4px; color: var(--muted); text-decoration: none;
+        font-family: var(--font-head); font-size: 0.75rem; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.05em; flex: 1; height: 100%; transition: color 0.2s;
+      }
+      .app-bottom-nav-item svg { stroke: var(--muted); transition: stroke 0.2s; }
+      .app-bottom-nav-item.active { color: var(--accent); }
+      .app-bottom-nav-item.active svg { stroke: var(--accent); }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="notifications.js"></script>
 </head>
 <body>
+
   <nav>
-    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+      <div class="nav-search-container">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Rechercher…" oninput="searchAthletes(this.value)" autocomplete="off" data-trad-placeholder="rechercher_placeholder"/>
+        <div class="search-results" id="search-results" style="display:none"></div>
+      </div>
+    </div>
     <ul>
-      <li><a href="index.html">Accueil</a></li>
-      <li><a href="courses.html" class="active">Courses</a></li>
-      <li><a href="stats.html">Stats</a></li>
+      <li><a href="index.html" data-trad="menu_accueil">Accueil</a></li>
+      <li><a href="courses.html" class="active" data-trad="menu_courses">Courses</a></li>
+      <li><a href="stats.html" data-trad="menu_stats">Stats</a></li>
+      <li><a href="profile.html" data-trad="menu_profil">Profil</a></li>
     </ul>
+    <div class="nav-actions">
+      <a href="ajouter.html" class="btn-add" data-trad="btn_ajouter">+ Ajouter</a>
+    </div>
   </nav>
+
+  <!-- Bouton flottant visible uniquement sur mobile -->
+  <a href="ajouter.html" class="fab" aria-label="Ajouter une course">+</a>
+
   <div class="page-header">
-    <div class="page-tag">Historique complet</div>
-    <h1>Mes <span>courses</span></h1>
+    <div class="page-tag" data-trad="page_tag">Mon historique</div>
+    <h1 id="page-title">Toutes mes <span>courses</span></h1>
   </div>
-  <div class="filters">
-    <span class="filter-label">Type</span>
-    <button class="filter-btn active" data-type="all">Tout</button>
-    <button class="filter-btn" data-type="Trail">Trail</button>
-    <button class="filter-btn" data-type="Route">Route</button>
-    <div class="filter-sep"></div>
-    <span class="filter-label">Année</span>
-    <div id="year-filters">
-      <button class="filter-btn active" data-year="all">Tout</button>
+
+  <div class="content">
+    <div class="races-list" id="races-container">
+      <div id="loading-text" style="color:var(--muted);padding:3rem;font-family:var(--font-head);letter-spacing:.1em;text-transform:uppercase;text-align:center;">Chargement du carnet de course…</div>
     </div>
   </div>
-  <main>
-    <div class="results-count"><strong id="count">—</strong> courses affichées</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th class="th-rank">Clt.</th>
-            <th class="th-nom">Course</th>
-            <th class="th-type">Type</th>
-            <th class="th-date">Date</th>
-            <th class="th-dist">Distance</th>
-            <th class="th-dplus">D+</th>
-            <th class="th-temps">Temps</th>
-            <th class="th-part">Participants</th>
-            <th class="th-cat">Clt. Cat.</th>
-          </tr>
-        </thead>
-        <tbody id="races-body"></tbody>
-      </table>
-      <div class="no-results" id="no-results">Aucune course trouvée 😅</div>
+
+  <!-- Modal édition -->
+  <div class="modal" id="edit-modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Modifier la <span>Course</span></h2>
+      <div class="msg-modal" id="modal-error"></div>
+      <form id="form-edit-race">
+        <input type="hidden" id="edit-id" />
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label data-trad="label_nom">Nom de la course *</label>
+            <input type="text" id="edit-nom" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_lieu">Lieu *</label>
+            <input type="text" id="edit-lieu" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_date">Date de la course *</label>
+            <input type="date" id="edit-date" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_type">Type *</label>
+            <select id="edit-type" required>
+              <option value="Route" data-trad="opt_route">Route</option>
+              <option value="Trail" data-trad="opt_trail">Trail</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-trad="label_dist">Distance (km) *</label>
+            <input type="number" step="any" id="edit-dist" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_dplus">Dénivelé D+ (m)</label>
+            <input type="number" id="edit-dplus" />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_temps">Temps chrono *</label>
+            <input type="text" id="edit-temps" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_participants">Nombre de participants *</label>
+            <input type="number" id="edit-participants" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_classement">Classement général *</label>
+            <input type="number" id="edit-classement" required />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_cat">Catégorie</label>
+            <input type="text" id="edit-cat" />
+          </div>
+          <div class="form-group">
+            <label data-trad="label_classement_cat">Classement catégorie *</label>
+            <input type="number" id="edit-classement-cat" required />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-submit btn-submit-save" id="btn-save-edit" data-trad="btn_enregistrer">Enregistrer</button>
+          <button type="button" class="btn-submit btn-submit-close" id="btn-close-modal" data-trad="btn_fermer">Fermer</button>
+        </div>
+      </form>
     </div>
-  </main>
+  </div>
+
   <footer>
     <div class="footer-logo">Run<span>Log</span></div>
-    <div>Fait avec ❤️ et beaucoup de dénivelé</div>
+    <div class="footer-credit">
+      <span data-trad="footer_text_before">Fait avec</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--accent2)" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span data-trad="footer_text_after">et beaucoup de dénivelé</span>
+    </div>
   </footer>
+
+  <!-- Barre de navigation bas (mobile uniquement) -->
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span data-trad="menu_accueil">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span data-trad="menu_courses">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-trad="menu_stats">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span data-trad="menu_profil">Profil</span>
+    </a>
+  </div>
+
   <script>
-    var allCourses = [];
-    var activeType = 'all';
-    var activeYear = 'all';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let allCoursesCache = [];
+    let currentLang = 'fr';
 
-    function rankClass(n) {
-      if (n === 1) return 'gold';
-      if (n === 2) return 'silver';
-      if (n === 3) return 'bronze';
-      if (n <= 10) return 'top10';
-      return '';
-    }
+    const ICON_EDIT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    const ICON_DELETE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+    const ARROW_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
-    function renderTable(data) {
-      var tbody = document.getElementById('races-body');
-      var noRes = document.getElementById('no-results');
-      document.getElementById('count').textContent = data.length;
-      if (!data.length) { tbody.innerHTML = ''; noRes.style.display = 'block'; return; }
-      noRes.style.display = 'none';
-      tbody.innerHTML = data.map(function(c) {
-        return '<tr>'
-          + '<td class="td-c"><div class="rank-pill ' + rankClass(c.classement) + '">' + c.classement + '</div></td>'
-          + '<td><div class="race-name">' + c.nom + '</div><div class="race-location">' + c.lieu + '</div></td>'
-          + '<td><span class="badge badge-' + (c.type === 'Trail' ? 'trail' : 'route') + '">' + c.type + '</span></td>'
-          + '<td class="td-muted">' + (c.date || c.annee) + '</td>'
-          + '<td class="td-num td-r">' + c.dist + '<small>km</small></td>'
-          + '<td class="td-num td-r ' + (c.dplus ? 'dplus' : 'td-muted') + '">' + (c.dplus ? c.dplus + '<small>m</small>' : '—') + '</td>'
-          + '<td class="td-num td-r">' + c.temps + '</td>'
-          + '<td class="td-num td-r td-muted">' + (c.participants ? c.participants.toLocaleString('fr-FR') : '—') + '</td>'
-          + '<td class="td-c"><div class="rank-pill ' + rankClass(c.classementCat) + '">' + c.classementCat + '<small style="font-size:.58rem;font-weight:300;margin-left:.15rem">' + (c.cat || '') + '</small></div></td>'
-          + '</tr>';
-      }).join('');
-    }
+    var traductions = {
+      fr: {
+        menu_accueil: "Accueil", menu_courses: "Courses", menu_stats: "Stats", menu_profil: "Profil",
+        rechercher_placeholder: "Rechercher…",
+        btn_ajouter: "+ Ajouter", page_tag: "Mon historique", page_title_start: "Toutes mes ", page_title_span: "courses",
+        loading: "Chargement du carnet de course…", no_race: "Aucune course enregistrée pour le moment.",
+        modal_title_start: "Modifier la ", modal_title_span: "Course", label_nom: "Nom de la course *",
+        label_lieu: "Lieu *", label_date: "Date de la course *", label_type: "Type *", opt_route: "Route", opt_trail: "Trail",
+        label_dist: "Distance (km) *", label_dplus: "Dénivelé D+ (m)", label_temps: "Temps chrono *",
+        label_participants: "Nombre de participants *", label_classement: "Classement général *",
+        label_cat: "Catégorie", label_classement_cat: "Classement catégorie *", btn_enregistrer: "Enregistrer",
+        btn_fermer: "Fermer", footer_text_before: "Fait avec", footer_text_after: "et beaucoup de dénivelé",
+        confirm_delete: "Es-tu sûr de vouloir définitivement supprimer la course ",
+        err_delete: "Erreur lors de la suppression : ", updating: "Mise à jour...",
+        err_db_ignore: "⚠️ Problème : La mise à jour a été ignorée par la base de données.",
+        err_supabase: "❌ Erreur Supabase : ", err_fields: "\nVérifie que les noms des colonnes correspondent exactement.",
+        view_book: "Voir le carnet", no_result: "Aucun résultat"
+      },
+      en: {
+        menu_accueil: "Home", menu_courses: "Races", menu_stats: "Stats", menu_profil: "Profile",
+        rechercher_placeholder: "Search…",
+        btn_ajouter: "+ Add Race", page_tag: "My history", page_title_start: "All my ", page_title_span: "races",
+        loading: "Loading race logbook…", no_race: "No races recorded yet.",
+        modal_title_start: "Edit ", modal_title_span: "Race", label_nom: "Race name *",
+        label_lieu: "Location *", label_date: "Race date *", label_type: "Type *", opt_route: "Road", opt_trail: "Trail",
+        label_dist: "Distance (km) *", label_dplus: "Elevation gain D+ (m)", label_temps: "Chrono time *",
+        label_participants: "Number of participants *", label_classement: "Overall ranking *",
+        label_cat: "Category", label_classement_cat: "Category ranking *", btn_enregistrer: "Save changes",
+        btn_fermer: "Close", footer_text_before: "Made with", footer_text_after: "and a lot of elevation gain",
+        confirm_delete: "Are you sure you want to permanently delete the race ",
+        err_delete: "Error while deleting: ", updating: "Updating...",
+        err_db_ignore: "⚠️ Problem: The update was ignored by the database.",
+        err_supabase: "❌ Supabase Error: ", err_fields: "\nVerify that your column names exactly match.",
+        view_book: "View logbook", no_result: "No results"
+      },
+      es: {
+        menu_accueil: "Inicio", menu_courses: "Carreras", menu_stats: "Estadísticas", menu_profil: "Perfil",
+        rechercher_placeholder: "Buscar…",
+        btn_ajouter: "+ Añadir", page_tag: "Mi historial", page_title_start: "Todas mis ", page_title_span: "carreras",
+        loading: "Cargando el cuaderno de carreras…", no_race: "Ninguna carrera registrada por el momento.",
+        modal_title_start: "Modificar la ", modal_title_span: "Carrera", label_nom: "Nombre de la carrera *",
+        label_lieu: "Lugar *", label_date: "Fecha de la carrera *", label_type: "Tipo *", opt_route: "Ruta", opt_trail: "Trail",
+        label_dist: "Distancia (km) *", label_dplus: "Desnivel D+ (m)", label_temps: "Tiempo crono *",
+        label_participants: "Número de participantes *", label_classement: "Clasificación general *",
+        label_cat: "Categoría", label_classement_cat: "Clasificación categoría *", btn_enregistrer: "Guardar",
+        btn_fermer: "Cerrar", footer_text_before: "Hecho con", footer_text_after: "y mucho desnivel positivo",
+        confirm_delete: "¿Estás seguro de que quieres eliminar definitivamente la carrera ",
+        err_delete: "Error al eliminar: ", updating: "Actualizando...",
+        err_db_ignore: "⚠️ Problema: La base de datos ignoró la actualización.",
+        err_supabase: "❌ Error de Supabase: ", err_fields: "\nComprueba que los nombres de las columnas coincidan.",
+        view_book: "Ver cuaderno", no_result: "Sin resultados"
+      }
+    };
 
-    function applyFilters() {
-      var filtered = allCourses.filter(function(c) {
-        var typeOk = activeType === 'all' || c.type === activeType;
-        var yearOk = activeYear === 'all' || c.annee === parseInt(activeYear);
-        return typeOk && yearOk;
+    function appliquerTraductions(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-trad]').forEach(function(el) {
+        var key = el.getAttribute('data-trad');
+        if (traductions[lang] && traductions[lang][key]) el.textContent = traductions[lang][key];
       });
-      renderTable(filtered);
+      document.querySelectorAll('[data-trad-placeholder]').forEach(function(el) {
+        var key = el.getAttribute('data-trad-placeholder');
+        if (traductions[lang] && traductions[lang][key]) el.setAttribute('placeholder', traductions[lang][key]);
+      });
+      var t = traductions[lang];
+      document.getElementById('page-title').innerHTML = t.page_title_start + '<span>' + t.page_title_span + '</span>';
+      document.getElementById('modal-title').innerHTML = t.modal_title_start + '<span>' + t.modal_title_span + '</span>';
+      var loadingText = document.getElementById('loading-text');
+      if (loadingText) loadingText.textContent = t.loading;
     }
 
-    function buildYearFilters(courses) {
-      var years = courses.map(function(c) { return c.annee; })
-        .filter(function(v, i, a) { return a.indexOf(v) === i; })
-        .sort(function(a, b) { return b - a; });
-      var container = document.getElementById('year-filters');
-      container.innerHTML = '<button class="filter-btn active" data-year="all">Tout</button>'
-        + years.map(function(y) { return '<button class="filter-btn" data-year="' + y + '">' + y + '</button>'; }).join('');
-      container.querySelectorAll('[data-year]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          container.querySelectorAll('[data-year]').forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          activeYear = btn.dataset.year;
-          applyFilters();
-        });
-      });
+    function parseFrenchDate(dateStr) {
+      if (!dateStr) return new Date(0);
+      const moisFr = { janvier:0, fevrier:1, février:1, mars:2, avril:3, mai:4, juin:5, juillet:6, aout:7, août:7, septembre:8, octobre:9, novembre:10, decembre:11, décembre:11 };
+      const cleanStr = dateStr.toLowerCase().replace(/[^a-z0-9éû]/g, ' ');
+      const parts = cleanStr.split(/\s+/).filter(Boolean);
+      let jour = 1, mois = 0, annee = new Date().getFullYear();
+      if (parts.length === 3) { jour = parseInt(parts[0]) || 1; mois = moisFr[parts[1]] !== undefined ? moisFr[parts[1]] : 0; annee = parseInt(parts[2]) || annee; }
+      else if (parts.length === 1 && !isNaN(parts[0])) { annee = parseInt(parts[0]); }
+      return new Date(annee, mois, jour);
     }
 
-    document.querySelectorAll('[data-type]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('[data-type]').forEach(function(b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        activeType = btn.dataset.type;
-        applyFilters();
-      });
+    function formatToFrenchText(dateIsoString) {
+      if (!dateIsoString) return '';
+      const dateObj = new Date(dateIsoString);
+      if (isNaN(dateObj.getTime())) return '';
+      const mois = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+      return `${dateObj.getDate()} ${mois[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+    }
+
+    // Fermeture recherche au clic extérieur
+    document.addEventListener('click', function(e) {
+      var container = document.querySelector('.nav-search-container');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
     });
 
-    fetch('./courses.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        allCourses = (data.courses || []).sort(function(a, b) { return b.annee - a.annee; });
-        buildYearFilters(allCourses);
-        renderTable(allCourses);
-      })
-      .catch(function() {
-        document.getElementById('races-body').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--muted)">Erreur de chargement.</td></tr>';
+    var searchTimeout = null;
+    function searchAthletes(query) {
+      var resultsDiv = document.getElementById('search-results');
+      clearTimeout(searchTimeout);
+      if (!query || query.trim().length < 2) { resultsDiv.style.display = 'none'; resultsDiv.innerHTML = ''; return; }
+      searchTimeout = setTimeout(async function() {
+        var res = await supabaseClient.from('profiles').select('id, username').ilike('username', '%' + query.trim() + '%');
+        if (res.error || !res.data) { resultsDiv.style.display = 'none'; return; }
+        var athletes = res.data || [];
+        resultsDiv.style.display = 'flex';
+        if (!athletes.length) { resultsDiv.innerHTML = '<div class="search-empty">' + traductions[currentLang].no_result + '</div>'; return; }
+        var html = '';
+        athletes.forEach(function(a) {
+          var pseudo = a.username || 'Athlète';
+          html += '<a href="athlete.html?id=' + a.id + '" class="search-result-row">'
+            + '<div class="athlete-avatar">' + pseudo.charAt(0).toUpperCase() + '</div>'
+            + '<div><div class="athlete-pseudo">' + pseudo + '</div><div class="athlete-meta">' + traductions[currentLang].view_book + '</div></div>'
+            + '<div class="athlete-arrow">' + ARROW_SVG + '</div></a>';
+        });
+        resultsDiv.innerHTML = html;
+      }, 300);
+    }
+
+    async function loadAllRaces() {
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) { window.location.href = 'profile.html'; return; }
+
+        let lang = 'fr';
+        var profileRes = await supabaseClient.from('profiles').select('langue').eq('id', user.id).maybeSingle();
+        if (profileRes.data && profileRes.data.langue) lang = profileRes.data.langue;
+        appliquerTraductions(lang);
+
+        const { data: courses, error } = await supabaseClient.from('courses').select('*').eq('user_id', user.id);
+        if (error) throw error;
+        allCoursesCache = courses || [];
+        allCoursesCache.sort((a, b) => parseFrenchDate(b.date) - parseFrenchDate(a.date));
+
+        const container = document.getElementById('races-container');
+        if (!allCoursesCache.length) {
+          container.innerHTML = `<div style="color:var(--muted);padding:4rem;text-align:center;font-family:var(--font-head);text-transform:uppercase;letter-spacing:.05em;">${traductions[lang].no_race}</div>`;
+          return;
+        }
+
+        container.innerHTML = allCoursesCache.map(c => `
+          <div class="race-row" onclick="if(!event.target.closest('.btn-action')) window.location='fiche-course.html?id=${c.id}&from=courses'">
+            <div class="race-rank ${parseInt(c.classement) <= 3 ? 'podium' : ''}">${c.classement || '—'}</div>
+            <div>
+              <div class="race-name">${c.nom || '—'}</div>
+              <div class="race-meta">${c.date || c.annee || '—'} · ${c.lieu || '—'}</div>
+            </div>
+            <span class="badge badge-${c.type === 'Trail' ? 'trail' : 'route'}">${c.type || 'Route'}</span>
+            <div class="race-dist">${c.dist || 0}<small>km</small></div>
+            <div class="race-time">${c.temps || '—'}</div>
+            <div class="race-actions">
+              <button class="btn-action btn-edit" data-id="${c.id}" title="Modifier">${ICON_EDIT}</button>
+              <button class="btn-action btn-delete" data-id="${c.id}" data-nom="${(c.nom || '').replace(/"/g, '&quot;')}" title="Supprimer">${ICON_DELETE}</button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (e) {
+        console.error('Erreur lors du chargement des courses:', e);
+        document.getElementById('races-container').innerHTML = '<div style="color:var(--muted);padding:3rem;text-align:center">' + e.message + '</div>';
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('btn-edit')) {
+        const courseId = e.target.getAttribute('data-id');
+        const course = allCoursesCache.find(c => (c.id == courseId || c.ID == courseId));
+        if (course) {
+          document.getElementById('edit-id').value = course.id || course.ID || '';
+          document.getElementById('edit-nom').value = course.nom || '';
+          document.getElementById('edit-lieu').value = course.lieu || '';
+          if (course.date) {
+            const parsedDate = parseFrenchDate(course.date);
+            if (!isNaN(parsedDate.getTime())) {
+              const yyyy = parsedDate.getFullYear();
+              const mm = String(parsedDate.getMonth() + 1).padStart(2, '0');
+              const dd = String(parsedDate.getDate()).padStart(2, '0');
+              document.getElementById('edit-date').value = `${yyyy}-${mm}-${dd}`;
+            } else { document.getElementById('edit-date').value = ''; }
+          } else { document.getElementById('edit-date').value = ''; }
+          document.getElementById('edit-type').value = course.type || 'Trail';
+          document.getElementById('edit-dist').value = course.dist || 0;
+          document.getElementById('edit-dplus').value = course.dplus || 0;
+          document.getElementById('edit-temps').value = course.temps || '';
+          document.getElementById('edit-participants').value = course.participants || '';
+          document.getElementById('edit-classement').value = course.classement || '';
+          document.getElementById('edit-cat').value = course.cat || '';
+          document.getElementById('edit-classement-cat').value = course.classement_cat || '';
+          document.getElementById('modal-error').style.display = 'none';
+          document.getElementById('edit-modal').classList.add('active');
+        }
+      }
+
+      if (e.target && e.target.classList.contains('btn-delete')) {
+        const courseId = e.target.getAttribute('data-id');
+        const courseName = e.target.getAttribute('data-nom') || '...';
+        if (confirm(`${traductions[currentLang].confirm_delete}"${courseName}" ?`)) {
+          supabaseClient.from('courses').delete().eq('id', courseId).then(res => {
+            if (res.error) throw res.error;
+            window.location.href = 'courses.html';
+          }).catch(err => { alert(traductions[currentLang].err_delete + err.message); });
+        }
+      }
+
+      if (e.target && e.target.id === 'btn-close-modal') {
+        document.getElementById('edit-modal').classList.remove('active');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAllRaces();
+
+      document.getElementById('form-edit-race').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errDiv = document.getElementById('modal-error');
+        errDiv.style.display = 'none';
+        const submitBtn = document.getElementById('btn-save-edit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = traductions[currentLang].updating;
+        const rawId = document.getElementById('edit-id').value;
+        const id = isNaN(rawId) ? rawId : parseInt(rawId);
+        const nom = document.getElementById('edit-nom').value.trim();
+        const lieu = document.getElementById('edit-lieu').value.trim();
+        const rawDateValue = document.getElementById('edit-date').value;
+        const dateTexteFormatte = formatToFrenchText(rawDateValue);
+        const anneeMiseAJour = rawDateValue ? new Date(rawDateValue).getFullYear() : new Date().getFullYear();
+        const type = document.getElementById('edit-type').value;
+        const distInput = document.getElementById('edit-dist').value;
+        const dist = parseFloat(String(distInput).replace(',', '.')) || 0;
+        const dplus = parseInt(document.getElementById('edit-dplus').value) || 0;
+        const temps = document.getElementById('edit-temps').value.trim();
+        const participants = parseInt(document.getElementById('edit-participants').value) || 0;
+        const classement = parseInt(document.getElementById('edit-classement').value) || 0;
+        const cat = document.getElementById('edit-cat').value.trim();
+        const classement_cat = parseInt(document.getElementById('edit-classement-cat').value) || 0;
+        try {
+          const { data, error } = await supabaseClient.from('courses').update({
+            nom, lieu, date: dateTexteFormatte, annee: anneeMiseAJour, type, dist, dplus,
+            temps, participants, classement, cat, classement_cat
+          }).eq('id', id).select();
+          if (error) throw error;
+          if (!data || data.length === 0) { alert(traductions[currentLang].err_db_ignore); return; }
+          window.location.href = 'courses.html';
+        } catch (err) {
+          console.error(err);
+          errDiv.textContent = "❌ " + err.message;
+          errDiv.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = traductions[currentLang].btn_enregistrer;
+        }
       });
+    });
   </script>
 </body>
 </html>

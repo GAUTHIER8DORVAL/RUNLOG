@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RunLog — Mon Profil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0f; --surface: #141418; --border: #222228;
+      --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+
+    /* --- NAVIGATION ORDINATEUR --- */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100;
+    }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
+    nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
+
+    /* --- RECHERCHE --- */
+    .nav-search-container { position: relative; width: 180px; }
+    .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; padding: 0.4rem 1rem 0.4rem 2.2rem; transition: all .2s; }
+    .search-input:focus { outline: none; border-color: var(--accent); background: #1a1a22; width: 220px; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; }
+    .search-results { position: absolute; top: calc(100% + 10px); left: 0; width: 260px; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 110; }
+    .search-result-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 1rem; background: var(--surface); border-left: 3px solid transparent; text-decoration: none; color: var(--text); transition: border-color .2s, background .2s; }
+    .search-result-row:hover { background: #18181e; border-left-color: var(--accent); }
+    .athlete-avatar { width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 0.9rem; color: var(--accent); flex-shrink: 0; }
+    .athlete-pseudo { font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: .05em; }
+    .athlete-meta { font-size: .7rem; color: var(--muted); }
+    .athlete-arrow { margin-left: auto; display: flex; align-items: center; }
+    .search-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+
+    /* --- BARRE DE NAVIGATION MOBILE (BAS) --- */
+    .app-bottom-nav { display: none; }
+
+    /* --- CONTENU PROFIL --- */
+    .profile-container { max-width: 800px; margin: 120px auto 4rem auto; padding: 0 2rem; }
+
+    .profile-header {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 3rem; display: flex; align-items: center; gap: 3rem; position: relative;
+    }
+    .profile-avatar-big {
+      width: 100px; height: 100px; background: var(--bg); border: 2px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-weight: 900; font-size: 3rem; color: var(--accent); flex-shrink: 0;
+    }
+    .profile-meta-block { display: flex; flex-direction: column; gap: 0.3rem; flex-grow: 1; }
+    .profile-name-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .profile-name { font-family: var(--font-head); font-weight: 900; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1; }
+
+    .cat-badge {
+      display: none; align-self: flex-start;
+      font-family: var(--font-head); font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      background: rgba(232,255,71,0.1); color: var(--accent);
+      padding: 0.2rem 0.6rem; border: 1px solid rgba(232,255,71,0.3); border-radius: 4px; margin-top: 0.2rem;
+    }
+
+    .btn-settings {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      padding: 0.5rem 1rem; border-radius: 4px;
+      font-family: var(--font-head); font-size: 0.85rem; font-weight: 500;
+      letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: all 0.2s ease; cursor: pointer;
+    }
+    .btn-settings:hover { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.05); }
+
+    .profile-social-container { margin-top: 0.5rem; }
+    .social-badge {
+      display: inline-flex; align-items: center; gap: 1rem;
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 0.6rem 1.2rem; border-radius: 4px;
+      text-decoration: none; color: var(--text); transition: all 0.2s ease;
+    }
+    .social-badge:hover { border-color: var(--accent); background: #141418; transform: translateY(-2px); }
+    .social-icon { display: flex; align-items: center; color: var(--muted); transition: color 0.2s; }
+    .social-badge:hover .social-icon { color: var(--accent); }
+    .social-info { display: flex; align-items: baseline; gap: 0.3rem; }
+    .social-count { font-family: var(--font-head); font-weight: 900; font-size: 1.3rem; color: var(--text); }
+    .social-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .social-arrow { font-family: var(--font-head); color: var(--muted); font-size: 0.8rem; transition: transform 0.2s; }
+    .social-badge:hover .social-arrow { color: var(--accent); transform: translateX(3px); }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+    .stat-card { background: var(--surface); padding: 2rem 1.8rem; display: flex; flex-direction: column; gap: .4rem; }
+    .stat-label { font-family: var(--font-head); font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+    .stat-value { font-family: var(--font-head); font-weight: 900; font-size: 3.2rem; line-height: 1; }
+    .stat-value span { color: var(--accent); font-size: 1.5rem; }
+    .stat-sub { font-size: .8rem; color: var(--muted); font-weight: 300; }
+
+    .profile-details { margin-top: 2rem; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .detail-row { background: var(--surface); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .detail-label { font-family: var(--font-head); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .detail-value { font-weight: 500; }
+
+    .btn-logout { margin-top: 2rem; display: block; width: 100%; text-align: center; font-family: var(--font-head); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 1rem; background: transparent; border: 2px solid #ff4a4a; color: #ff4a4a; border-radius: 2px; cursor: pointer; transition: all 0.2s; }
+    .btn-logout:hover { background: #ff4a4a; color: #0d0d0f; }
+
+    /* --- RESPONSIVE MOBILE APP --- */
+    @media(max-width:900px){
+      /* Barre du haut */
+      nav {
+        padding: 0.8rem 1.2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-left-group { width: 100%; justify-content: space-between; gap: 1rem; }
+      nav ul { display: none !important; }
+      .nav-actions-empty { display: none; }
+      .nav-search-container { width: 140px; }
+      .search-input:focus { width: 160px; }
+      .search-results { right: 0; left: auto; width: 240px; }
+
+      /* Conteneur profil */
+      .profile-container { margin-top: 70px; padding: 0 1.2rem 7rem 1.2rem; }
+
+      /* Header profil : empilé verticalement */
+      .profile-header { flex-direction: column; text-align: center; padding: 2rem 1.2rem; gap: 1.2rem; }
+      .profile-avatar-big { width: 80px; height: 80px; font-size: 2.4rem; }
+      .profile-meta-block { align-items: center; width: 100%; }
+      .profile-name-row { flex-direction: column; gap: 0.8rem; align-items: center; }
+      .profile-name { font-size: 2rem; }
+      .btn-settings { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+      .profile-social-container { display: flex; justify-content: center; }
+
+      /* Stats 2 colonnes mais compactes */
+      .stat-card { padding: 1.2rem 1rem; }
+      .stat-value { font-size: 2.4rem; }
+      .stat-value span { font-size: 1.2rem; }
+
+      /* Détails */
+      .detail-row { flex-direction: column; gap: 0.4rem; align-items: flex-start; padding: 1rem 1.2rem; }
+
+      /* Bouton logout */
+      .btn-logout { margin-bottom: 1rem; }
+
+      /* Barre de navigation bas */
+      .app-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 68px;
+        background: rgba(20,20,24,0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .app-bottom-nav-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 4px; color: var(--muted); text-decoration: none;
+        font-family: var(--font-head); font-size: 0.75rem; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.05em; flex: 1; height: 100%; transition: color 0.2s;
+      }
+      .app-bottom-nav-item svg { stroke: var(--muted); transition: stroke 0.2s; }
+      .app-bottom-nav-item.active { color: var(--accent); }
+      .app-bottom-nav-item.active svg { stroke: var(--accent); }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="notifications.js"></script>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+      <div class="nav-search-container">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Rechercher…" oninput="searchAthletes(this.value)" autocomplete="off" data-trad-placeholder="rechercher_placeholder"/>
+        <div class="search-results" id="search-results" style="display:none"></div>
+      </div>
+    </div>
+    <ul>
+      <li><a href="index.html" data-trad="menu_accueil">Accueil</a></li>
+      <li><a href="courses.html" data-trad="menu_courses">Courses</a></li>
+      <li><a href="stats.html" data-trad="menu_stats">Stats</a></li>
+      <li><a href="profile.html" class="active" data-trad="menu_profil">Profil</a></li>
+    </ul>
+    <div class="nav-actions-empty"></div>
+  </nav>
+
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="profile-avatar-big" id="user-initial">RL</div>
+      <div class="profile-meta-block">
+        <div class="profile-name-row">
+          <div class="profile-name" id="user-name">Athlète</div>
+          <a href="parametre.html" class="btn-settings" id="btn-settings-txt">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span id="btn-settings-label">Paramètres</span>
+          </a>
+        </div>
+
+        <div id="user-cat-badge" class="cat-badge">Catégorie</div>
+
+        <div class="profile-social-container">
+          <a href="liste-amis.html" class="social-badge">
+            <span class="social-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </span>
+            <div class="social-info">
+              <span id="nb-amis" class="social-count">0</span>
+              <span class="social-label" data-trad="lbl_amis">amis</span>
+            </div>
+            <span class="social-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label" data-trad="lbl_courses">Courses</div><div class="stat-value" id="stat-count">0</div><div class="stat-sub" data-trad="sub_depuis_debut">depuis le début</div></div>
+      <div class="stat-card"><div class="stat-label" data-trad="lbl_km">Kilomètres</div><div class="stat-value" id="stat-km">0<span>km</span></div><div class="stat-sub" data-trad="sub_competition">en compétition</div></div>
+      <div class="stat-card"><div class="stat-label" data-trad="lbl_dplus">Dénivelé</div><div class="stat-value" id="stat-dplus">0.0<span>k+</span></div><div class="stat-sub" data-trad="sub_total">D+ total</div></div>
+      <div class="stat-card"><div class="stat-label" data-trad="lbl_podiums">Podiums</div><div class="stat-value" id="stat-count-podiums">0</div><div class="stat-sub" data-trad="sub_top3">top 3 cat.</div></div>
+    </div>
+
+    <div class="profile-details">
+      <div class="detail-row">
+        <span class="detail-label" data-trad="det_cat">Catégorie FFA</span>
+        <span class="detail-value" id="user-cat-detail">Non renseignée</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label" data-trad="det_birth">Année de Naissance</span>
+        <span class="detail-value" id="user-birth-detail">Non renseignée</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label" data-trad="det_email">Adresse Email</span>
+        <span class="detail-value" id="user-email">...</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label" data-trad="det_id">ID Utilisateur</span>
+        <span class="detail-value" id="user-id" style="font-family:monospace;font-size:0.8rem;color:var(--muted);">...</span>
+      </div>
+    </div>
+
+    <button class="btn-logout" id="btn-logout-txt" onclick="handleLogout()">Se déconnecter</button>
+  </div>
+
+  <!-- Barre de navigation bas (mobile uniquement) -->
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span data-trad="menu_accueil">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span data-trad="menu_courses">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-trad="menu_stats">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span data-trad="menu_profil">Profil</span>
+    </a>
+  </div>
+
+  <script>
+    var supabaseClient;
+    try {
+      if (typeof SUPABASE_URL !== 'undefined') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClientInstance = supabaseClient;
+      }
+    } catch(err) { console.error(err); }
+
+    var searchTimeout = null;
+    var currentLang = 'fr';
+
+    var ARROW_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+    var settingsSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+
+    var traductions = {
+      fr: {
+        menu_accueil: "Accueil", menu_courses: "Courses", menu_stats: "Stats", menu_profil: "Profil",
+        rechercher_placeholder: "Rechercher…",
+        lbl_amis: "amis", btn_settings: "Paramètres", btn_logout: "Se déconnecter",
+        lbl_courses: "Courses", sub_depuis_debut: "depuis le début",
+        lbl_km: "Kilomètres", sub_competition: "en compétition",
+        lbl_dplus: "Dénivelé", sub_total: "D+ total",
+        lbl_podiums: "Podiums", sub_top3: "top 3 cat.",
+        det_cat: "Catégorie FFA", det_birth: "Année de Naissance",
+        det_email: "Adresse Email", det_id: "ID Utilisateur",
+        not_provided: "Non renseignée", default_athlete: "Athlète",
+        cat_minime: "Minime / Benjamin", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)",
+        cat_espoir: "Espoir (ES)", cat_senior: "Senior (SE)", cat_master: "Master",
+        view_book: "Voir le carnet", no_result: "Aucun résultat"
+      },
+      en: {
+        menu_accueil: "Home", menu_courses: "Races", menu_stats: "Stats", menu_profil: "Profile",
+        rechercher_placeholder: "Search…",
+        lbl_amis: "friends", btn_settings: "Settings", btn_logout: "Log Out",
+        lbl_courses: "Races", sub_depuis_debut: "since the beginning",
+        lbl_km: "Kilometers", sub_competition: "in competition",
+        lbl_dplus: "Elevation", sub_total: "Total D+",
+        lbl_podiums: "Podiums", sub_top3: "top 3 cat.",
+        det_cat: "FFA Category", det_birth: "Year of Birth",
+        det_email: "Email Address", det_id: "User ID",
+        not_provided: "Not provided", default_athlete: "Athlete",
+        cat_minime: "Youth / U16", cat_cadet: "Cadet (U18)", cat_junior: "Junior (U20)",
+        cat_espoir: "Hope (U23)", cat_senior: "Senior (SE)", cat_master: "Master",
+        view_book: "View logbook", no_result: "No results"
+      },
+      es: {
+        menu_accueil: "Inicio", menu_courses: "Carreras", menu_stats: "Estadísticas", menu_profil: "Perfil",
+        rechercher_placeholder: "Buscar…",
+        lbl_amis: "amigos", btn_settings: "Ajustes", btn_logout: "Cerrar sesión",
+        lbl_courses: "Carreras", sub_depuis_debut: "desde el principio",
+        lbl_km: "Kilómetros", sub_competition: "en competición",
+        lbl_dplus: "Desnivel", sub_total: "D+ total",
+        lbl_podiums: "Podios", sub_top3: "top 3 cat.",
+        det_cat: "Categoría FFA", det_birth: "Año de Nacimiento",
+        det_email: "Correo Electrónico", det_id: "ID de Usuario",
+        not_provided: "No especificado", default_athlete: "Atleta",
+        cat_minime: "Minime / Benjamin", cat_cadet: "Cadete (CA)", cat_junior: "Junior (JU)",
+        cat_espoir: "Promesa (ES)", cat_senior: "Senior (SE)", cat_master: "Master",
+        view_book: "Ver cuaderno", no_result: "Sin resultados"
+      }
+    };
+
+    function appliquerTraductions(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      var t = traductions[lang] || traductions['fr'];
+      document.querySelectorAll('[data-trad]').forEach(function(el) {
+        var key = el.getAttribute('data-trad');
+        if (t[key]) el.textContent = t[key];
+      });
+      document.querySelectorAll('[data-trad-placeholder]').forEach(function(el) {
+        var key = el.getAttribute('data-trad-placeholder');
+        if (t[key]) el.setAttribute('placeholder', t[key]);
+      });
+      var settingsEl = document.getElementById('btn-settings-txt');
+      if (settingsEl) settingsEl.innerHTML = settingsSVG + '<span>' + t.btn_settings + '</span>';
+      document.getElementById('btn-logout-txt').textContent = t.btn_logout;
+    }
+
+    // Fermeture recherche au clic extérieur
+    document.addEventListener('click', function(e) {
+      var container = document.querySelector('.nav-search-container');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
+    });
+
+    function searchAthletes(query) {
+      var resultsDiv = document.getElementById('search-results');
+      clearTimeout(searchTimeout);
+      if (!query || query.trim().length < 2) { resultsDiv.style.display = 'none'; resultsDiv.innerHTML = ''; return; }
+      searchTimeout = setTimeout(async function() {
+        var res = await supabaseClient.from('profiles').select('id, username').ilike('username', '%' + query.trim() + '%');
+        if (res.error || !res.data) { resultsDiv.style.display = 'none'; return; }
+        var athletes = res.data || [];
+        resultsDiv.style.display = 'flex';
+        if (!athletes.length) { resultsDiv.innerHTML = '<div class="search-empty">' + traductions[currentLang].no_result + '</div>'; return; }
+        var html = '';
+        athletes.forEach(function(a) {
+          var pseudo = a.username || 'Athlète';
+          html += '<a href="athlete.html?id=' + a.id + '" class="search-result-row">'
+            + '<div class="athlete-avatar">' + pseudo.charAt(0).toUpperCase() + '</div>'
+            + '<div><div class="athlete-pseudo">' + pseudo + '</div><div class="athlete-meta">' + traductions[currentLang].view_book + '</div></div>'
+            + '<div class="athlete-arrow">' + ARROW_SVG + '</div></a>';
+        });
+        resultsDiv.innerHTML = html;
+      }, 300);
+    }
+
+    function calculerCategorie(dateNaissanceString, lang) {
+      if (!dateNaissanceString) return null;
+      var anneeNaissance = parseInt(dateNaissanceString.split('-')[0]);
+      if (isNaN(anneeNaissance)) return null;
+      var age = new Date().getFullYear() - anneeNaissance;
+      var t = traductions[lang] || traductions['fr'];
+      if (age < 16) return t.cat_minime;
+      if (age === 16 || age === 17) return t.cat_cadet;
+      if (age === 18 || age === 19) return t.cat_junior;
+      if (age >= 20 && age <= 22) return t.cat_espoir;
+      if (age >= 23 && age <= 34) return t.cat_senior;
+      if (age >= 35 && age <= 39) return t.cat_master + " 0 (M0)";
+      if (age >= 40 && age <= 44) return t.cat_master + " 1 (M1)";
+      if (age >= 45 && age <= 49) return t.cat_master + " 2 (M2)";
+      if (age >= 50 && age <= 54) return t.cat_master + " 3 (M3)";
+      if (age >= 55 && age <= 59) return t.cat_master + " 4 (M4)";
+      if (age >= 60 && age <= 64) return t.cat_master + " 5 (M5)";
+      if (age >= 65 && age <= 69) return t.cat_master + " 6 (M6)";
+      if (age >= 70 && age <= 74) return t.cat_master + " 7 (M7)";
+      if (age >= 75 && age <= 79) return t.cat_master + " 8 (M8)";
+      if (age >= 80) return t.cat_master + " 9+ (M9)";
+      return t.cat_senior;
+    }
+
+    async function loadProfile() {
+      if (!supabaseClient) return;
+      try {
+        var userRes = await supabaseClient.auth.getUser();
+        var user = userRes.data?.user;
+        if (!user) { window.location.href = "login.html"; return; }
+
+        let lang = 'fr';
+        try {
+          var { data: profileLang } = await supabaseClient.from('profiles').select('langue').eq('id', user.id).maybeSingle();
+          if (profileLang && profileLang.langue) lang = profileLang.langue;
+        } catch(e) { console.warn(e); }
+
+        appliquerTraductions(lang);
+        var t = traductions[lang] || traductions['fr'];
+
+        document.getElementById('user-email').textContent = user.email || "";
+        document.getElementById('user-id').textContent = user.id || "";
+        document.getElementById('user-cat-detail').textContent = t.not_provided;
+        document.getElementById('user-birth-detail').textContent = t.not_provided;
+
+        var pseudo = user.email.split('@')[0];
+        try {
+          var { data: profile } = await supabaseClient.from('profiles').select('username, date_naissance').eq('id', user.id).maybeSingle();
+          if (profile) {
+            if (profile.username) pseudo = profile.username;
+            if (profile.date_naissance) {
+              document.getElementById('user-birth-detail').textContent = profile.date_naissance.split('-')[0];
+              var cat = calculerCategorie(profile.date_naissance, lang);
+              if (cat) {
+                var catBadge = document.getElementById('user-cat-badge');
+                catBadge.textContent = cat;
+                catBadge.style.display = 'inline-block';
+                document.getElementById('user-cat-detail').textContent = cat;
+              }
+            }
+          }
+        } catch(e) { console.warn(e); }
+
+        document.getElementById('user-name').textContent = pseudo || t.default_athlete;
+        document.getElementById('user-initial').textContent = (pseudo || "R").charAt(0).toUpperCase();
+
+        chargerCompteurAmis(user.id);
+        chargerStatsCourses(user.id);
+
+      } catch(e) { console.error(e); }
+    }
+
+    async function chargerCompteurAmis(userId) {
+      try {
+        var res = await supabaseClient.from('amis').select('*', { count: 'exact', head: true })
+          .eq('statut', 'accepte').or('demandeur_id.eq.' + userId + ',receveur_id.eq.' + userId);
+        if (!res.error) document.getElementById('nb-amis').textContent = res.count || 0;
+      } catch(e) {}
+    }
+
+    async function chargerStatsCourses(userId) {
+      try {
+        var res = await supabaseClient.from('courses').select('*').eq('user_id', userId);
+        if (res.error) throw res.error;
+        var courses = res.data || [];
+        var totalKm    = courses.reduce(function(s,c){ return s+(parseFloat(c.dist)||0); }, 0);
+        var totalDplus = courses.reduce(function(s,c){ return s+(parseInt(c.dplus)||0); }, 0);
+        var podiums    = courses.filter(function(c){ return parseInt(c.classement_cat)<=3; }).length;
+        document.getElementById('stat-count').innerHTML         = courses.length;
+        document.getElementById('stat-km').innerHTML            = Math.round(totalKm)+'<span>km</span>';
+        document.getElementById('stat-dplus').innerHTML         = (totalDplus/1000).toFixed(1)+'<span>k+</span>';
+        document.getElementById('stat-count-podiums').innerHTML = podiums;
+      } catch(e) {}
+    }
+
+    async function handleLogout() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+        window.location.href = "login.html";
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
+  </script>
+</body>
+</html>

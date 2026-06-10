@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>RunLog — Mon carnet de course</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -13,16 +15,61 @@
       --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
-
-    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
+    
+    /* --- NAVIGATION ORDINATEUR --- */
+    nav { 
+      position: fixed; top: 0; left: 0; right: 0; 
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); 
+      background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; 
+    }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
     .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
     nav a:hover, nav a.active { color: var(--accent); }
+    .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
 
+    /* --- RECHERCHE --- */
+    .nav-search-container { position: relative; width: 180px; }
+    .search-input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; color: var(--text); font-family: var(--font-body);
+      font-size: 0.85rem; padding: 0.4rem 1rem 0.4rem 2.2rem; transition: all .2s;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); background: #1a1a22; width: 220px; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; }
+
+    .search-results { 
+      position: absolute; top: calc(100% + 10px); left: 0; width: 260px;
+      display: flex; flex-direction: column; gap: 1px; 
+      background: var(--border); border: 1px solid var(--border); 
+      border-radius: 6px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 110;
+    }
+    .search-result-row {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.7rem 1rem; background: var(--surface);
+      border-left: 3px solid transparent;
+      text-decoration: none; color: var(--text);
+      transition: border-color .2s, background .2s;
+    }
+    .search-result-row:hover { background: #18181e; border-left-color: var(--accent); }
+    .athlete-avatar { width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 0.9rem; color: var(--accent); flex-shrink: 0; }
+    .athlete-pseudo { font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: .05em; }
+    .athlete-meta { font-size: .7rem; color: var(--muted); }
+    .athlete-arrow { margin-left: auto; display: flex; align-items: center; }
+    .search-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+
+    /* --- BARRE DE NAVIGATION MOBILE (BAS) --- */
+    .app-bottom-nav {
+      display: none; /* Masquée sur ordinateur */
+    }
+
+    /* --- DESIGN HERO & CONTENU --- */
     .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; padding-top: 80px; position: relative; overflow: hidden; }
-    .hero::after { content: '2025'; position: absolute; right: -0.05em; bottom: -.1em; font-family: var(--font-head); font-weight: 900; font-size: clamp(12rem, 22vw, 22rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
+    .hero::after { content: '2026'; position: absolute; right: -0.05em; bottom: -.1em; font-family: var(--font-head); font-weight: 900; font-size: clamp(12rem, 22vw, 22rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
     .hero-left { display: flex; flex-direction: column; justify-content: center; padding: 4rem 3rem 4rem 4rem; position: relative; z-index: 1; }
     .hero-tag { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 2rem; }
     .hero-tag::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--accent); }
@@ -30,12 +77,11 @@
     h1 em { font-style: normal; color: var(--accent); display: block; }
     .hero-desc { font-size: 1rem; font-weight: 300; line-height: 1.7; color: var(--muted); max-width: 38ch; margin-bottom: 3rem; }
     .cta-group { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .btn { font-family: var(--font-head); font-weight: 700; font-size: .9rem; letter-spacing: .15em; text-transform: uppercase; padding: .9rem 2rem; border-radius: 2px; text-decoration: none; transition: all .2s; }
+    .btn { font-family: var(--font-head); font-weight: 700; font-size: .9rem; letter-spacing: .15em; text-transform: uppercase; padding: .9rem 2rem; border-radius: 2px; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: .5rem; }
     .btn-primary { background: var(--accent); color: #0d0d0f; border: 2px solid var(--accent); }
     .btn-primary:hover { background: transparent; color: var(--accent); }
     .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--border); }
     .btn-ghost:hover { border-color: var(--text); }
-
     .hero-right { display: flex; flex-direction: column; justify-content: center; padding: 4rem 4rem 4rem 2rem; position: relative; z-index: 1; }
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .stat-card { background: var(--surface); padding: 2rem 1.8rem; display: flex; flex-direction: column; gap: .4rem; opacity: 0; transform: translateY(20px); animation: fadeUp .5s forwards; }
@@ -50,17 +96,19 @@
     .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 3rem; }
     .section-title { font-family: var(--font-head); font-weight: 900; font-size: clamp(2rem, 4vw, 3.5rem); text-transform: uppercase; }
     .section-title span { color: var(--accent); }
-    .see-all { font-family: var(--font-head); font-size: .85rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .see-all { font-family: var(--font-head); font-size: .85rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; display: inline-flex; align-items: center; gap: .4rem; }
     .see-all:hover { color: var(--accent); }
+    .see-all:hover svg { stroke: var(--accent); }
+    .see-all svg { stroke: var(--muted); transition: stroke .2s; }
 
-    .races-list { display: flex; flex-direction: column; gap: 1px; }
+    .races-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .race-row { display: grid; grid-template-columns: 70px 1fr 90px 100px 100px; align-items: center; gap: 1.5rem; padding: 1.4rem 2rem; background: var(--surface); border-left: 3px solid transparent; transition: border-color .2s, background .2s; text-decoration: none; color: var(--text); }
     .race-row:hover { background: #18181e; border-left-color: var(--accent); }
     .race-rank { font-family: var(--font-head); font-weight: 900; font-size: 2rem; color: var(--muted); text-align: center; }
     .race-rank.podium { color: var(--accent); }
     .race-name { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
     .race-meta { font-size: .8rem; color: var(--muted); }
-    .badge { font-family: var(--font-head); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; padding: .3rem .8rem; border-radius: 2px; }
+    .badge { font-family: var(--font-head); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; padding: .3rem .8rem; border-radius: 2px; text-align: center; }
     .badge-trail { background: rgba(232,255,71,.1); color: var(--accent); }
     .badge-route { background: rgba(255,107,53,.1); color: var(--accent2); }
     .race-dist { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; text-align: right; }
@@ -70,107 +118,370 @@
     footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .8rem; }
     .footer-logo { font-family: var(--font-head); font-weight: 900; font-size: 1rem; letter-spacing: .1em; text-transform: uppercase; }
     .footer-logo span { color: var(--accent); }
+    .footer-credit { display: flex; align-items: center; gap: .4rem; }
+    .footer-credit svg { flex-shrink: 0; }
 
+    /* --- RESPONSIVE STYLE (MOBILE APP FORMAT) --- */
     @media(max-width:900px){
-      nav{padding:1rem 1.5rem} nav ul{gap:1.5rem}
-      .hero{grid-template-columns:1fr} .hero-right{padding:2rem 1.5rem 4rem} .hero-left{padding:3rem 1.5rem 2rem}
-      .section{padding:4rem 1.5rem}
-      .race-row{grid-template-columns:60px 1fr auto}
-      .badge,.race-time{display:none}
-      footer{flex-direction:column;gap:.5rem;text-align:center;padding:1.5rem}
+      /* Configuration de la barre du haut mobile avec barre de recherche uniquement */
+      nav { 
+        padding: 0.8rem 1.2rem; 
+        flex-direction: row; 
+        justify-content: space-between;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-left-group { width: 100%; justify-content: space-between; gap: 1rem; }
+      nav ul { display: none !important; } /* On cache totalement l'ancien menu textuel du haut */
+      .nav-actions-empty { display: none; }
+      .nav-search-container { width: 140px; }
+      .search-input:focus { width: 160px; }
+      .search-results { right: 0; left: auto; width: 240px; }
+
+      /* Ajustements structurels pour le contenu */
+      .hero { padding-top: 70px; grid-template-columns: 1fr; min-height: auto; }
+      .hero::after { display: none; } /* Enlever le gros texte de fond 2026 sur mobile pour alléger */
+      .hero-left { padding: 2.5rem 1.2rem 1.5rem 1.2rem; }
+      .hero-right { padding: 0 1.2rem 2.5rem 1.2rem; }
+      
+      .section { padding: 3rem 1.2rem 6rem 1.2rem; } /* Ajout de padding en bas pour éviter d'être masqué par la barre */
+      .race-row { grid-template-columns: 50px 1fr auto; padding: 1rem 1rem; gap: 1rem; }
+      .race-rank { font-size: 1.5rem; }
+      .badge, .race-time { display: none; }
+      
+      footer { flex-direction: column; gap: .5rem; text-align: center; padding: 2rem 1.2rem 7rem 1.2rem; }
+
+      /* Affichage et fixation de la barre de navigation style Application en bas */
+      .app-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 68px;
+        background: rgba(20, 20, 24, 0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom); /* Gère l'espace des barres d'iPhone */
+      }
+      .app-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--muted);
+        text-decoration: none;
+        font-family: var(--font-head);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        flex: 1;
+        height: 100%;
+        transition: color 0.2s;
+      }
+      .app-bottom-nav-item svg {
+        stroke: var(--muted);
+        transition: stroke 0.2s;
+      }
+      .app-bottom-nav-item.active {
+        color: var(--accent);
+      }
+      .app-bottom-nav-item.active svg {
+        stroke: var(--accent);
+      }
     }
   </style>
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="notifications.js"></script>
 </head>
 <body>
+
   <nav>
-    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+      <div class="nav-search-container">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Rechercher…" oninput="searchAthletes(this.value)" autocomplete="off" data-trad-placeholder="rechercher_placeholder"/>
+        <div class="search-results" id="search-results" style="display:none"></div>
+      </div>
+    </div>
+
     <ul>
-      <li><a href="index.html" class="active">Accueil</a></li>
-      <li><a href="courses.html">Courses</a></li>
-      <li><a href="stats.html">Stats</a></li>
+      <li><a href="index.html" class="active" data-trad="menu_accueil">Accueil</a></li>
+      <li><a href="courses.html" data-trad="menu_courses">Courses</a></li>
+      <li><a href="stats.html" data-trad="menu_stats">Stats</a></li>
+      <li><a href="profile.html" data-trad="menu_profil">Profil</a></li>
     </ul>
+
+    <div class="nav-actions-empty"></div>
   </nav>
 
   <section class="hero">
     <div class="hero-left">
-      <div class="hero-tag">Trail &amp; Route</div>
-      <h1>Mon carnet<em>de course</em></h1>
-      <p class="hero-desc">Chaque départ, chaque sommet, chaque arrivée. Ici je retrace toutes mes courses, mes classements et ma progression au fil des saisons.</p>
+      <div class="hero-tag" data-trad="hero_tag">Trail &amp; Route</div>
+      <h1 id="hero-title">Mon carnet <em data-trad="hero_em">de course</em></h1>
+      <p class="hero-desc" data-trad="hero_desc">Chaque départ, chaque sommet, chaque arrivée. Ici je retrace toutes mes courses, mes classements et ma progression au fil des saisons.</p>
       <div class="cta-group">
-        <a href="courses.html" class="btn btn-primary">Voir mes courses</a>
-        <a href="stats.html" class="btn btn-ghost">Mes statistiques</a>
+        <a href="courses.html" class="btn btn-primary" data-trad="btn_voir_courses">Voir mes courses</a>
+        <a href="stats.html" class="btn btn-ghost" data-trad="btn_mes_stats">Mes statistiques</a>
       </div>
     </div>
     <div class="hero-right">
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">Courses</div><div class="stat-value" id="stat-count">—</div><div class="stat-sub">depuis le début</div></div>
-        <div class="stat-card"><div class="stat-label">Kilomètres</div><div class="stat-value" id="stat-km">—</div><div class="stat-sub">en compétition</div></div>
-        <div class="stat-card"><div class="stat-label">Dénivelé</div><div class="stat-value" id="stat-dplus">—</div><div class="stat-sub">D+ total</div></div>
-        <div class="stat-card"><div class="stat-label">Podiums</div><div class="stat-value" id="stat-podiums">—</div><div class="stat-sub">top 3 cat.</div></div>
+        <div class="stat-card"><div class="stat-label" data-trad="label_courses">Courses</div><div class="stat-value" id="stat-count">—</div><div class="stat-sub" data-trad="sub_courses">depuis le début</div></div>
+        <div class="stat-card"><div class="stat-label" data-trad="label_km">Kilomètres</div><div class="stat-value" id="stat-km">—</div><div class="stat-sub" data-trad="sub_km">en compétition</div></div>
+        <div class="stat-card"><div class="stat-label" data-trad="label_dplus">Dénivelé</div><div class="stat-value" id="stat-dplus">—</div><div class="stat-sub" data-trad="sub_dplus">D+ total</div></div>
+        <div class="stat-card"><div class="stat-label" data-trad="label_podiums">Podiums</div><div class="stat-value" id="stat-podiums">—</div><div class="stat-sub" data-trad="sub_podiums">top 3 cat.</div></div>
       </div>
     </div>
   </section>
 
   <section class="section">
     <div class="section-header">
-      <h2 class="section-title">Dernières <span>courses</span></h2>
-      <a href="courses.html" class="see-all">Tout voir →</a>
+      <h2 class="section-title" id="section-races-title">Dernières <span>courses</span></h2>
+      <a href="courses.html" class="see-all">
+        <span data-trad="btn_tout_voir">Tout voir</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
     </div>
     <div class="races-list" id="latest-races-list">
-      <div style="color:var(--muted);padding:2rem;font-family:var(--font-head);letter-spacing:.1em;text-transform:uppercase">Chargement…</div>
+      <div id="loading-text" style="color:var(--muted);padding:2rem;font-family:var(--font-head);letter-spacing:.1em;text-transform:uppercase;text-align:center">Chargement…</div>
     </div>
   </section>
 
   <footer>
     <div class="footer-logo">Run<span>Log</span></div>
-    <div>Fait avec ❤️ et beaucoup de dénivelé</div>
+    <div class="footer-credit">
+      <span data-trad="footer_text_before">Fait avec</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--accent2)" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span data-trad="footer_text_after">et beaucoup de dénivelé</span>
+    </div>
   </footer>
 
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span data-trad="menu_accueil">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span data-trad="menu_courses">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-trad="menu_stats">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span data-trad="menu_profil">Profil</span>
+    </a>
+  </div>
+
   <script>
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var searchTimeout = null;
+    var currentLang = 'fr';
+
+    var ARROW_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+    var traductions = {
+      fr: {
+        menu_accueil: "Accueil", menu_courses: "Courses", menu_stats: "Stats", menu_profil: "Profil",
+        rechercher_placeholder: "Rechercher…", hero_tag: "Trail & Route", hero_title: "Mon carnet ", hero_em: "de course",
+        hero_desc: "Chaque départ, chaque sommet, chaque arrivée. Ici je retrace toutes mes courses, mes classements et ma progression au fil des saisons.",
+        btn_voir_courses: "Voir mes courses", btn_mes_stats: "Mes statistiques",
+        label_courses: "Courses", sub_courses: "depuis le début", label_km: "Kilomètres", sub_km: "en compétition",
+        label_dplus: "Dénivelé", sub_dplus: "D+ total", label_podiums: "Podiums", sub_podiums: "top 3 cat.",
+        races_title_start: "Dernières ", races_title_span: "courses", btn_tout_voir: "Tout voir",
+        footer_text_before: "Fait avec", footer_text_after: "et beaucoup de dénivelé",
+        loading: "Chargement…",
+        no_race: "Aucune course — ", add_first: "Ajouter la première", view_book: "Voir le carnet", no_result: "Aucun résultat"
+      },
+      en: {
+        menu_accueil: "Home", menu_courses: "Races", menu_stats: "Stats", menu_profil: "Profile",
+        rechercher_placeholder: "Search…", hero_tag: "Trail & Road", hero_title: "My running ", hero_em: "logbook",
+        hero_desc: "Every start, every summit, every finish line. Here I track all my races, rankings, and progression throughout the seasons.",
+        btn_voir_courses: "View my races", btn_mes_stats: "My statistics",
+        label_courses: "Races", sub_courses: "from the beginning", label_km: "Kilometers", sub_km: "in competition",
+        label_dplus: "Elevation", sub_dplus: "Total D+", label_podiums: "Podiums", sub_podiums: "top 3 cat.",
+        races_title_start: "Latest ", races_title_span: "races", btn_tout_voir: "See all",
+        footer_text_before: "Made with", footer_text_after: "and a lot of elevation gain",
+        loading: "Loading…",
+        no_race: "No races found — ", add_first: "Add your first one", view_book: "View logbook", no_result: "No results"
+      },
+      es: {
+        menu_accueil: "Inicio", menu_courses: "Carreras", menu_stats: "Estadísticas", menu_profil: "Perfil",
+        rechercher_placeholder: "Buscar…", hero_tag: "Trail & Ruta", hero_title: "Mi cuaderno ", hero_em: "de carreras",
+        hero_desc: "Cada salida, cada cumbre, cada meta. Aquí sigo todas mis carreras, mis clasificaciones y mi progresión a lo largo de las temporadas.",
+        btn_voir_courses: "Ver mis carreras", btn_mes_stats: "Mis estadísticas",
+        label_courses: "Carreras", sub_courses: "desde el principio", label_km: "Kilómetros", sub_km: "en competición",
+        label_dplus: "Desnivel", sub_dplus: "D+ total", label_podiums: "Podios", sub_podiums: "top 3 cat.",
+        races_title_start: "Últimas ", races_title_span: "carreras", btn_tout_voir: "Ver todo",
+        footer_text_before: "Hecho con", footer_text_after: "y mucho desnivel positivo",
+        loading: "Cargando…",
+        no_race: "Ninguna carrera — ", add_first: "Añadir la primera", view_book: "Ver cuaderno", no_result: "Sin resultados"
+      }
+    };
+
+    function appliquerTraductions(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      document.querySelectorAll('[data-trad]').forEach(function(el) {
+        var key = el.getAttribute('data-trad');
+        if (traductions[lang] && traductions[lang][key]) {
+          el.textContent = traductions[lang][key];
+        }
+      });
+
+      document.querySelectorAll('[data-trad-placeholder]').forEach(function(el) {
+        var key = el.getAttribute('data-trad-placeholder');
+        if (traductions[lang] && traductions[lang][key]) {
+          el.setAttribute('placeholder', traductions[lang][key]);
+        }
+      });
+
+      var t = traductions[lang];
+      document.getElementById('hero-title').innerHTML = t.hero_title + '<em data-trad="hero_em">' + t.hero_em + '</em>';
+      document.getElementById('section-races-title').innerHTML = t.races_title_start + '<span>' + t.races_title_span + '</span>';
+      var loadingText = document.getElementById('loading-text');
+      if (loadingText) loadingText.textContent = t.loading;
+    }
+
+    document.addEventListener('click', function(e) {
+      var container = document.querySelector('.nav-search-container');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
+    });
+
+    function parseFrenchDate(dateStr) {
+      if (!dateStr) return new Date(0);
+      var moisFr = {
+        janvier:0, fevrier:1, février:1, mars:2, avril:3, mai:4, juin:5,
+        juillet:6, aout:7, août:7, septembre:8, octobre:9, novembre:10, decembre:11, décembre:11
+      };
+      var cleanStr = dateStr.toLowerCase().replace(/[^a-z0-9éû]/g, ' ');
+      var parts = cleanStr.split(/\s+/).filter(Boolean);
+      var jour = 1, mois = 0, annee = new Date().getFullYear();
+      if (parts.length === 3) {
+        jour = parseInt(parts[0]) || 1;
+        mois = moisFr[parts[1]] !== undefined ? moisFr[parts[1]] : 0;
+        annee = parseInt(parts[2]) || annee;
+      } else if (parts.length === 1 && !isNaN(parts[0])) {
+        annee = parseInt(parts[0]);
+      }
+      return new Date(annee, mois, jour);
+    }
+
     async function loadHome() {
       try {
-        const res = await fetch('./courses.json');
-        const data = await res.json();
-        const courses = (data.courses || []).sort((a, b) => b.annee - a.annee);
+        var userRes = await supabaseClient.auth.getUser();
+        var user = userRes.data.user;
+        var lang = 'fr';
 
-        const totalKm    = courses.reduce((s, c) => s + (parseFloat(c.dist) || 0), 0);
-        const totalDplus = courses.reduce((s, c) => s + (parseInt(c.dplus) || 0), 0);
-        const podiums    = courses.filter(c => parseInt(c.classementCat) <= 3).length;
+        if (user) {
+          var profileRes = await supabaseClient.from('profiles').select('langue').eq('id', user.id).maybeSingle();
+          if (profileRes.data && profileRes.data.langue) lang = profileRes.data.langue;
+        }
 
-        document.getElementById('stat-count').innerHTML = `${courses.length}`;
-        document.getElementById('stat-km').innerHTML    = `${Math.round(totalKm)}<span>km</span>`;
-        document.getElementById('stat-dplus').innerHTML = `${(totalDplus/1000).toFixed(1)}<span>k+</span>`;
-        document.getElementById('stat-podiums').innerHTML = `${podiums}`;
+        appliquerTraductions(lang);
 
-        const list = document.getElementById('latest-races-list');
-        const last4 = courses.slice(0, 4);
-        if (!last4.length) { list.innerHTML = '<div style="color:var(--muted);padding:2rem;text-align:center">Aucune course encore.</div>'; return; }
+        var query = supabaseClient.from('courses').select('*');
+        if (user) query = query.eq('user_id', user.id);
+        var res = await query;
+        if (res.error) throw res.error;
+        var courses = res.data || [];
 
-        list.innerHTML = last4.map(c => `
-          <a href="courses.html" class="race-row">
-            <div class="race-rank ${c.classement <= 3 ? 'podium' : ''}">${c.classement}</div>
-            <div>
-              <div class="race-name">${c.nom}</div>
-              <div class="race-meta">${c.date || c.annee} · ${c.lieu}</div>
-            </div>
-            <span class="badge badge-${c.type === 'Trail' ? 'trail' : 'route'}">${c.type}</span>
-            <div class="race-dist">${c.dist}<small>km</small></div>
-            <div class="race-time">${c.temps}</div>
-          </a>
-        `).join('');
-      } catch(e) {
-        console.error(e);
-      }
+        var totalKm    = courses.reduce(function(s,c){ return s+(parseFloat(c.dist)||0); }, 0);
+        var totalDplus = courses.reduce(function(s,c){ return s+(parseInt(c.dplus)||0); }, 0);
+        var podiums    = courses.filter(function(c){ return parseInt(c.classement_cat)<=3; }).length;
+
+        document.getElementById('stat-count').innerHTML   = courses.length;
+        document.getElementById('stat-km').innerHTML      = Math.round(totalKm)+'<span>km</span>';
+        document.getElementById('stat-dplus').innerHTML   = (totalDplus/1000).toFixed(1)+'<span>k+</span>';
+        document.getElementById('stat-podiums').innerHTML = podiums;
+
+        courses.sort(function(a, b) { return parseFrenchDate(b.date) - parseFrenchDate(a.date); });
+
+        var list  = document.getElementById('latest-races-list');
+        var last4 = courses.slice(0, 4);
+
+        if (!last4.length) {
+          list.innerHTML = '<div style="color:var(--muted);padding:3rem;text-align:center;font-family:var(--font-head);text-transform:uppercase">'
+            + traductions[lang].no_race + '<a href="ajouter.html" style="color:var(--accent)">' + traductions[lang].add_first + '</a></div>';
+          return;
+        }
+
+        list.innerHTML = last4.map(function(c) {
+          var courseId = c.id || c.ID || '';
+          return '<a href="fiche-course.html?id=' + courseId + '&from=index" class="race-row">'
+            +'<div class="race-rank '+(parseInt(c.classement)<=3?'podium':'')+'">'+(c.classement||'—')+'</div>'
+            +'<div><div class="race-name">'+(c.nom||'—')+'</div><div class="race-meta">'+(c.date||c.annee||'—')+' · '+(c.lieu||'—')+'</div></div>'
+            +'<span class="badge badge-'+(c.type==='Trail'?'trail':'route')+'">'+(c.type||'—')+'</span>'
+            +'<div class="race-dist">'+(c.dist||0)+'<small>km</small></div>'
+            +'<div class="race-time">'+(c.temps||'—')+'</div>'
+            +'</a>';
+        }).join('');
+      } catch(e) { console.error('Erreur accueil:', e); }
     }
+
+    function searchAthletes(query) {
+      var resultsDiv = document.getElementById('search-results');
+      clearTimeout(searchTimeout);
+      if (!query || query.trim().length < 2) {
+        resultsDiv.style.display = 'none';
+        resultsDiv.innerHTML = '';
+        return;
+      }
+      searchTimeout = setTimeout(async function() {
+        var res = await supabaseClient
+          .from('profiles')
+          .select('id, username')
+          .ilike('username', '%' + query.trim() + '%');
+        if (res.error || !res.data) { resultsDiv.style.display = 'none'; return; }
+        var athletes = res.data || [];
+        resultsDiv.style.display = 'flex';
+        if (!athletes.length) {
+          resultsDiv.innerHTML = '<div class="search-empty">' + traductions[currentLang].no_result + '</div>';
+          return;
+        }
+        var html = '';
+        athletes.forEach(function(a) {
+          var pseudo = a.username || 'Athlète';
+          var initiale = pseudo.charAt(0).toUpperCase();
+          html += '<a href="athlete.html?id=' + a.id + '" class="search-result-row">'
+            + '<div class="athlete-avatar">' + initiale + '</div>'
+            + '<div>'
+            + '<div class="athlete-pseudo">' + pseudo + '</div>'
+            + '<div class="athlete-meta">' + traductions[currentLang].view_book + '</div>'
+            + '</div>'
+            + '<div class="athlete-arrow">' + ARROW_SVG + '</div>'
+            + '</a>';
+        });
+        resultsDiv.innerHTML = html;
+      }, 300);
+    }
+
     loadHome();
   </script>
   <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) { window.netlifyIdentity.on("login", () => { document.location.href = "/admin/"; }); }
-      });
-    }
-  </script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('Service Worker Enregistré'));
+  }
+</script>
 </body>
 </html>

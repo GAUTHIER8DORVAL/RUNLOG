@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Statistiques — RunLog</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -15,13 +17,40 @@
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
 
-    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
+    /* --- NAVIGATION ORDINATEUR --- */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100;
+    }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
     .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
     nav a:hover, nav a.active { color: var(--accent); }
+    .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
 
+    /* --- RECHERCHE --- */
+    .nav-search-container { position: relative; width: 180px; }
+    .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; padding: 0.4rem 1rem 0.4rem 2.2rem; transition: all .2s; }
+    .search-input:focus { outline: none; border-color: var(--accent); background: #1a1a22; width: 220px; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; }
+    .search-results { position: absolute; top: calc(100% + 10px); left: 0; width: 260px; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 110; }
+    .search-result-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 1rem; background: var(--surface); border-left: 3px solid transparent; text-decoration: none; color: var(--text); transition: border-color .2s, background .2s; }
+    .search-result-row:hover { background: #18181e; border-left-color: var(--accent); }
+    .athlete-avatar { width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 0.9rem; color: var(--accent); flex-shrink: 0; }
+    .athlete-pseudo { font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: .05em; }
+    .athlete-meta { font-size: .7rem; color: var(--muted); }
+    .athlete-arrow { margin-left: auto; display: flex; align-items: center; }
+    .search-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+
+    /* --- BARRE DE NAVIGATION MOBILE (BAS) --- */
+    .app-bottom-nav { display: none; }
+
+    /* --- PAGE HEADER --- */
     .page-header { padding: 9rem 4rem 4rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
     .page-header::after { content: 'STATS'; position: absolute; right: -0.02em; bottom: -.15em; font-family: var(--font-head); font-weight: 900; font-size: clamp(8rem, 20vw, 20rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
     .page-tag { font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
@@ -29,25 +58,21 @@
     h1 { font-family: var(--font-head); font-weight: 900; font-size: clamp(3rem, 6vw, 5.5rem); line-height: .95; text-transform: uppercase; position: relative; z-index: 1; }
     h1 span { color: var(--accent); }
 
+    /* --- CONTENU --- */
     .content { padding: 4rem; display: flex; flex-direction: column; gap: 4rem; }
-
-    /* KPI */
     .section-title { font-family: var(--font-head); font-weight: 900; font-size: clamp(1.6rem, 3vw, 2.4rem); text-transform: uppercase; margin-bottom: 1.5rem; }
     .section-title span { color: var(--accent); }
 
     .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .kpi-card { background: var(--surface); padding: 2rem 1.8rem; display: flex; flex-direction: column; gap: .5rem; opacity: 0; transform: translateY(16px); animation: fadeUp .5s forwards; }
-    .kpi-card:nth-child(1){animation-delay:.05s} .kpi-card:nth-child(2){animation-delay:.12s}
-    .kpi-card:nth-child(3){animation-delay:.19s} .kpi-card:nth-child(4){animation-delay:.26s}
-    .kpi-card:nth-child(5){animation-delay:.33s} .kpi-card:nth-child(6){animation-delay:.40s}
-    .kpi-card:nth-child(7){animation-delay:.47s} .kpi-card:nth-child(8){animation-delay:.54s}
+    .kpi-card:nth-child(1){animation-delay:.05s} .kpi-card:nth-child(2){animation-delay:.12s} .kpi-card:nth-child(3){animation-delay:.19s} .kpi-card:nth-child(4){animation-delay:.26s}
+    .kpi-card:nth-child(5){animation-delay:.33s} .kpi-card:nth-child(6){animation-delay:.40s} .kpi-card:nth-child(7){animation-delay:.47s} .kpi-card:nth-child(8){animation-delay:.54s}
     @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
     .kpi-label { font-family: var(--font-head); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
     .kpi-value { font-family: var(--font-head); font-weight: 900; font-size: 2.8rem; line-height: 1; }
     .kpi-value span { color: var(--accent); font-size: 1.4rem; }
     .kpi-sub { font-size: .78rem; color: var(--muted); font-weight: 300; min-height: 1rem; }
 
-    /* Charts */
     .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .chart-card { background: var(--surface); padding: 2rem; }
     .chart-card.full { grid-column: 1 / -1; }
@@ -55,11 +80,9 @@
     .chart-container { position: relative; height: 220px; }
     .chart-container.tall { height: 280px; }
 
-    /* Podiums */
     .podiums-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-    .podium-card { background: var(--surface); padding: 1.8rem; display: flex; flex-direction: column; gap: .6rem; border-left: 3px solid transparent; transition: border-color .2s; }
-    .podium-card:hover { border-left-color: var(--accent); }
-    .podium-medal { font-size: 1.4rem; }
+    .podium-card { background: var(--surface); padding: 1.8rem; display: flex; flex-direction: column; gap: .6rem; border-left: 3px solid transparent; transition: border-color .2s, background-color .2s; cursor: pointer; }
+    .podium-card:hover { border-left-color: var(--accent); background-color: #18181e; }
     .podium-race { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; text-transform: uppercase; letter-spacing: .04em; }
     .podium-detail { font-size: .8rem; color: var(--muted); font-weight: 300; }
     .podium-rank { font-family: var(--font-head); font-weight: 900; font-size: 2rem; color: var(--accent); line-height: 1; }
@@ -70,81 +93,315 @@
     .footer-logo { font-family: var(--font-head); font-weight: 900; font-size: 1rem; letter-spacing: .1em; text-transform: uppercase; }
     .footer-logo span { color: var(--accent); }
 
-    @media(max-width:1000px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .charts-grid{grid-template-columns:1fr} .chart-card.full{grid-column:1} .podiums-grid{grid-template-columns:1fr} }
-    @media(max-width:600px){ nav{padding:1rem 1.5rem} nav ul{gap:1.5rem} .page-header{padding:7rem 1.5rem 3rem} .content{padding:2rem 1.5rem} footer{flex-direction:column;gap:.5rem;text-align:center;padding:1.5rem} }
+    /* --- RESPONSIVE PC INTERMÉDIAIRE --- */
+    @media(max-width:1000px){
+      .kpi-grid { grid-template-columns: repeat(2,1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card.full { grid-column: 1; }
+      .podiums-grid { grid-template-columns: 1fr; }
+    }
+
+    /* --- RESPONSIVE MOBILE APP --- */
+    @media(max-width:900px){
+      /* Barre du haut */
+      nav {
+        padding: 0.8rem 1.2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-left-group { width: 100%; justify-content: space-between; gap: 1rem; }
+      nav ul { display: none !important; }
+      .nav-actions-empty { display: none; }
+      .nav-search-container { width: 140px; }
+      .search-input:focus { width: 160px; }
+      .search-results { right: 0; left: auto; width: 240px; }
+
+      /* Header & contenu */
+      .page-header { padding: 5rem 1.2rem 2rem; }
+      .page-header::after { display: none; }
+      .content { padding: 1.5rem 1.2rem 7rem 1.2rem; gap: 2.5rem; }
+
+      /* KPI grid 2 colonnes sur mobile */
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .kpi-card { padding: 1.2rem 1rem; }
+      .kpi-value { font-size: 2rem; }
+      .kpi-value span { font-size: 1.1rem; }
+
+      /* Charts */
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card.full { grid-column: 1; }
+      .chart-card { padding: 1.2rem 1rem; }
+      .chart-container { height: 180px; }
+      .chart-container.tall { height: 220px; }
+
+      /* Podiums */
+      .podiums-grid { grid-template-columns: 1fr; }
+      .podium-card { padding: 1.2rem 1rem; }
+
+      footer { flex-direction: column; gap: .5rem; text-align: center; padding: 2rem 1.2rem 7rem 1.2rem; }
+
+      /* Barre de navigation bas */
+      .app-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 68px;
+        background: rgba(20, 20, 24, 0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .app-bottom-nav-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 4px; color: var(--muted); text-decoration: none;
+        font-family: var(--font-head); font-size: 0.75rem; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.05em; flex: 1; height: 100%; transition: color 0.2s;
+      }
+      .app-bottom-nav-item svg { stroke: var(--muted); transition: stroke 0.2s; }
+      .app-bottom-nav-item.active { color: var(--accent); }
+      .app-bottom-nav-item.active svg { stroke: var(--accent); }
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="notifications.js"></script>
 </head>
 <body>
+
   <nav>
-    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+      <div class="nav-search-container">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Rechercher…" oninput="searchAthletes(this.value)" autocomplete="off" data-trad-placeholder="rechercher_placeholder"/>
+        <div class="search-results" id="search-results" style="display:none"></div>
+      </div>
+    </div>
     <ul>
-      <li><a href="index.html">Accueil</a></li>
-      <li><a href="courses.html">Courses</a></li>
-      <li><a href="stats.html" class="active">Stats</a></li>
+      <li><a href="index.html" data-trad="menu_accueil">Accueil</a></li>
+      <li><a href="courses.html" data-trad="menu_courses">Courses</a></li>
+      <li><a href="stats.html" class="active" data-trad="menu_stats">Stats</a></li>
+      <li><a href="profile.html" data-trad="menu_profil">Profil</a></li>
     </ul>
+    <div class="nav-actions-empty"></div>
   </nav>
 
   <div class="page-header">
-    <div class="page-tag">Ma progression</div>
-    <h1>Mes <span>stats</span></h1>
+    <div class="page-tag" data-trad="page_tag">Ma progression</div>
+    <h1 id="page-title">Mes <span>stats</span></h1>
   </div>
 
   <div class="content">
     <div>
-      <div class="section-title">Chiffres <span>clés</span></div>
-      <div class="kpi-grid" id="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Courses</div><div class="kpi-value" id="kpi-count">—</div><div class="kpi-sub">depuis le début</div></div>
-        <div class="kpi-card"><div class="kpi-label">Kilomètres</div><div class="kpi-value" id="kpi-km">—</div><div class="kpi-sub">en compétition</div></div>
-        <div class="kpi-card"><div class="kpi-label">Dénivelé cumulé</div><div class="kpi-value" id="kpi-dplus">—</div><div class="kpi-sub">D+ total</div></div>
-        <div class="kpi-card"><div class="kpi-label">Meilleur classement</div><div class="kpi-value" id="kpi-best">—</div><div class="kpi-sub" id="kpi-best-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-label">Courses Trail</div><div class="kpi-value" id="kpi-trail">—</div><div class="kpi-sub" id="kpi-route-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-label">Plus longue distance</div><div class="kpi-value" id="kpi-dist-max">—</div><div class="kpi-sub" id="kpi-dist-max-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-label">Meilleur clt. cat.</div><div class="kpi-value" id="kpi-best-cat">—</div><div class="kpi-sub" id="kpi-best-cat-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-label">Podiums (top 3 cat.)</div><div class="kpi-value" id="kpi-podiums">—</div><div class="kpi-sub">classements cat.</div></div>
+      <div class="section-title" id="sec-chiffres">Chiffres <span>clés</span></div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_courses">Courses</div><div class="kpi-value" id="kpi-count">—</div><div class="kpi-sub" data-trad="sub_depuis_debut">depuis le début</div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_km">Kilomètres</div><div class="kpi-value" id="kpi-km">—</div><div class="kpi-sub" data-trad="sub_competition">en compétition</div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_dplus">Dénivelé cumulé</div><div class="kpi-value" id="kpi-dplus">—</div><div class="kpi-sub" data-trad="sub_total">D+ total</div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_best_clt">Meilleur classement</div><div class="kpi-value" id="kpi-best">—</div><div class="kpi-sub" id="kpi-best-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_trail_races">Courses Trail</div><div class="kpi-value" id="kpi-trail">—</div><div class="kpi-sub" id="kpi-route-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_max_dist">Plus longue distance</div><div class="kpi-value" id="kpi-dist-max">—</div><div class="kpi-sub" id="kpi-dist-max-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_best_cat">Meilleur clt. cat.</div><div class="kpi-value" id="kpi-best-cat">—</div><div class="kpi-sub" id="kpi-best-cat-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-label" data-trad="lbl_podiums">Podiums (top 3 cat.)</div><div class="kpi-value" id="kpi-podiums">—</div><div class="kpi-sub" data-trad="sub_clt_cat">classements cat.</div></div>
       </div>
     </div>
-
     <div>
-      <div class="section-title">Évolution <span>annuelle</span></div>
+      <div class="section-title" id="sec-evolution">Évolution <span>annuelle</span></div>
       <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-label">Kilomètres par année</div>
-          <div class="chart-container"><canvas id="chart-km"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-label">Nombre de courses par année</div>
-          <div class="chart-container"><canvas id="chart-nb"></canvas></div>
-        </div>
-        <div class="chart-card full">
-          <div class="chart-label">% de participants devancés — plus c'est haut, mieux c'est</div>
-          <div class="chart-container tall"><canvas id="chart-rank"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-label">Répartition Trail vs Route</div>
-          <div class="chart-container"><canvas id="chart-type"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-label">Dénivelé cumulé par année (m)</div>
-          <div class="chart-container"><canvas id="chart-dplus"></canvas></div>
-        </div>
+        <div class="chart-card"><div class="chart-label" data-trad="c_lbl_km">Kilomètres par année</div><div class="chart-container"><canvas id="chart-km"></canvas></div></div>
+        <div class="chart-card"><div class="chart-label" data-trad="c_lbl_nb">Nombre de courses par année</div><div class="chart-container"><canvas id="chart-nb"></canvas></div></div>
+        <div class="chart-card full"><div class="chart-label" data-trad="c_lbl_rank">% de participants devancés — plus c'est haut, mieux c'est</div><div class="chart-container tall"><canvas id="chart-rank"></canvas></div></div>
+        <div class="chart-card"><div class="chart-label" data-trad="c_lbl_type">Répartition Trail vs Route</div><div class="chart-container"><canvas id="chart-type"></canvas></div></div>
+        <div class="chart-card"><div class="chart-label" data-trad="c_lbl_dplus">Dénivelé cumulé par année (m)</div><div class="chart-container"><canvas id="chart-dplus"></canvas></div></div>
       </div>
     </div>
-
     <div>
-      <div class="section-title">Meilleurs <span>résultats</span></div>
+      <div class="section-title" id="sec-resultats">Meilleurs <span>résultats</span></div>
       <div id="podiums-container"></div>
     </div>
   </div>
 
   <footer>
     <div class="footer-logo">Run<span>Log</span></div>
-    <div>Fait avec ❤️ et beaucoup de dénivelé</div>
+    <div id="footer-text"></div>
   </footer>
 
+  <!-- Barre de navigation bas (mobile uniquement) -->
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span data-trad="menu_accueil">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span data-trad="menu_courses">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-trad="menu_stats">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span data-trad="menu_profil">Profil</span>
+    </a>
+  </div>
+
   <script>
-    const accentColor  = '#e8ff47';
-    const accent2Color = '#ff6b35';
-    const gridColor    = '#222228';
+    var accentColor  = '#e8ff47';
+    var accent2Color = '#ff6b35';
+    var gridColor    = '#222228';
+    var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClientInstance = supabaseClient;
+    var currentLang = 'fr';
+    var searchTimeout = null;
+
+    var ARROW_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+    function trophySVG(rank) {
+      var colors = { 1: '#e8ff47', 2: '#aaaaaa', 3: '#ff6b35' };
+      var c = colors[rank] || '#6b6b72';
+      return '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="' + c + '" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M8 21h8"/><path d="M12 17v4"/>'
+        + '<path d="M7 4H4a2 2 0 0 0 0 4c0 2.8 1.8 5.2 4.5 6.2"/>'
+        + '<path d="M17 4h3a2 2 0 0 1 0 4c0 2.8-1.8 5.2-4.5 6.2"/>'
+        + '<rect x="7" y="2" width="10" height="12" rx="2"/></svg>';
+    }
+
+    var heartSVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="var(--accent2)" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin:0 .3em"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+
+    var traductions = {
+      fr: {
+        menu_accueil: "Accueil", menu_courses: "Courses", menu_stats: "Stats", menu_profil: "Profil",
+        rechercher_placeholder: "Rechercher…",
+        page_tag: "Ma progression", page_title_start: "Mes ", page_title_span: "stats",
+        sec_chiffres_start: "Chiffres ", sec_chiffres_span: "clés",
+        sec_evolution_start: "Évolution ", sec_evolution_span: "annuelle",
+        sec_resultats_start: "Meilleurs ", sec_resultats_span: "résultats",
+        lbl_courses: "Courses", sub_depuis_debut: "depuis le début",
+        lbl_km: "Kilomètres", sub_competition: "en compétition",
+        lbl_dplus: "Dénivelé cumulé", sub_total: "D+ total",
+        lbl_best_clt: "Meilleur classement", lbl_trail_races: "Courses Trail",
+        sub_route_suffix: " en route", lbl_max_dist: "Plus longue distance",
+        lbl_best_cat: "Meilleur clt. cat.", lbl_podiums: "Podiums (top 3 cat.)", sub_clt_cat: "classements cat.",
+        c_lbl_km: "Kilomètres par année", c_lbl_nb: "Nombre de courses par année",
+        c_lbl_rank: "% de participants devancés — plus c'est haut, mieux c'est",
+        c_lbl_type: "Répartition Trail vs Route", c_lbl_dplus: "Dénivelé cumulé par année (m)",
+        empty_msg_init: "Aucune statistique disponible — Ajoute une course ! 💪",
+        empty_msg_podium: "Pas encore de podium — ça va venir ! 💪",
+        footer_text_before: "Fait avec", footer_text_after: "et beaucoup de dénivelé",
+        th_suff: "e", c_trail: "Trail", c_route: "Route",
+        t_tooltip_devances: " devancés", t_tooltip_general: " au général",
+        t_tooltip_courses: " courses", general_suffix: " au général",
+        view_book: "Voir le carnet", no_result: "Aucun résultat"
+      },
+      en: {
+        menu_accueil: "Home", menu_courses: "Races", menu_stats: "Stats", menu_profil: "Profile",
+        rechercher_placeholder: "Search…",
+        page_tag: "My progress", page_title_start: "My ", page_title_span: "stats",
+        sec_chiffres_start: "Key ", sec_chiffres_span: "Figures",
+        sec_evolution_start: "Annual ", sec_evolution_span: "Evolution",
+        sec_resultats_start: "Best ", sec_resultats_span: "Results",
+        lbl_courses: "Races", sub_depuis_debut: "since the beginning",
+        lbl_km: "Kilometers", sub_competition: "in competition",
+        lbl_dplus: "Total Elevation", sub_total: "Total D+",
+        lbl_best_clt: "Best Position", lbl_trail_races: "Trail Races",
+        sub_route_suffix: " on road", lbl_max_dist: "Longest Distance",
+        lbl_best_cat: "Best Cat. Rank", lbl_podiums: "Podiums (top 3 cat.)", sub_clt_cat: "category ranks",
+        c_lbl_km: "Kilometers per year", c_lbl_nb: "Number of races per year",
+        c_lbl_rank: "% of runners beaten — higher is better",
+        c_lbl_type: "Trail vs Road Breakdown", c_lbl_dplus: "Accumulated elevation per year (m)",
+        empty_msg_init: "No statistics available — Add a race! 💪",
+        empty_msg_podium: "No podium finishes yet — keep pushing! 💪",
+        footer_text_before: "Made with", footer_text_after: "and a lot of elevation gain",
+        th_suff: "th", c_trail: "Trail", c_route: "Road",
+        t_tooltip_devances: "% beaten", t_tooltip_general: " overall",
+        t_tooltip_courses: " races", general_suffix: " overall",
+        view_book: "View logbook", no_result: "No results"
+      },
+      es: {
+        menu_accueil: "Inicio", menu_courses: "Carreras", menu_stats: "Estadísticas", menu_profil: "Perfil",
+        rechercher_placeholder: "Buscar…",
+        page_tag: "Mi progreso", page_title_start: "Mis ", page_title_span: "estadísticas",
+        sec_chiffres_start: "Cifras ", sec_chiffres_span: "clave",
+        sec_evolution_start: "Evolución ", sec_evolution_span: "anual",
+        sec_resultats_start: "Mejores ", sec_resultats_span: "resultados",
+        lbl_courses: "Carreras", sub_depuis_debut: "desde el principio",
+        lbl_km: "Kilómetros", sub_competition: "en competición",
+        lbl_dplus: "Desnivel acumulado", sub_total: "D+ total",
+        lbl_best_clt: "Mejor clasificación", lbl_trail_races: "Carreras de Trail",
+        sub_route_suffix: " en ruta", lbl_max_dist: "Distancia más larga",
+        lbl_best_cat: "Mejor clt. cat.", lbl_podiums: "Podios (top 3 cat.)", sub_clt_cat: "clasificaciones cat.",
+        c_lbl_km: "Kilómetros por año", c_lbl_nb: "Número de carreras por año",
+        c_lbl_rank: "% de participantes superados — cuanto más alto, mejor",
+        c_lbl_type: "Distribución Trail vs Ruta", c_lbl_dplus: "Desnivel acumulado por año (m)",
+        empty_msg_init: "No hay estadísticas disponibles — ¡Añade una carrera! 💪",
+        empty_msg_podium: "Ningún podio todavía — ¡ya llegará! 💪",
+        footer_text_before: "Hecho con", footer_text_after: "y mucho desnivel positivo",
+        th_suff: "º", c_trail: "Trail", c_route: "Ruta",
+        t_tooltip_devances: "% superados", t_tooltip_general: " en la general",
+        t_tooltip_courses: " carreras", general_suffix: " en la general",
+        view_book: "Ver cuaderno", no_result: "Sin resultados"
+      }
+    };
+
+    function appliquerTraductions(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-trad]').forEach(function(el) {
+        var key = el.getAttribute('data-trad');
+        if (traductions[lang] && traductions[lang][key]) el.textContent = traductions[lang][key];
+      });
+      document.querySelectorAll('[data-trad-placeholder]').forEach(function(el) {
+        var key = el.getAttribute('data-trad-placeholder');
+        if (traductions[lang] && traductions[lang][key]) el.setAttribute('placeholder', traductions[lang][key]);
+      });
+      var t = traductions[lang];
+      document.getElementById('page-title').innerHTML = t.page_title_start + '<span>' + t.page_title_span + '</span>';
+      document.getElementById('sec-chiffres').innerHTML = t.sec_chiffres_start + '<span>' + t.sec_chiffres_span + '</span>';
+      document.getElementById('sec-evolution').innerHTML = t.sec_evolution_start + '<span>' + t.sec_evolution_span + '</span>';
+      document.getElementById('sec-resultats').innerHTML = t.sec_resultats_start + '<span>' + t.sec_resultats_span + '</span>';
+      var ftEl = document.getElementById('footer-text');
+      if (ftEl) ftEl.innerHTML = t.footer_text_before + heartSVG + t.footer_text_after;
+    }
+
+    // Fermeture recherche au clic extérieur
+    document.addEventListener('click', function(e) {
+      var container = document.querySelector('.nav-search-container');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
+    });
+
+    function searchAthletes(query) {
+      var resultsDiv = document.getElementById('search-results');
+      clearTimeout(searchTimeout);
+      if (!query || query.trim().length < 2) { resultsDiv.style.display = 'none'; resultsDiv.innerHTML = ''; return; }
+      searchTimeout = setTimeout(async function() {
+        var res = await supabaseClient.from('profiles').select('id, username').ilike('username', '%' + query.trim() + '%');
+        if (res.error || !res.data) { resultsDiv.style.display = 'none'; return; }
+        var athletes = res.data || [];
+        resultsDiv.style.display = 'flex';
+        if (!athletes.length) { resultsDiv.innerHTML = '<div class="search-empty">' + traductions[currentLang].no_result + '</div>'; return; }
+        var html = '';
+        athletes.forEach(function(a) {
+          var pseudo = a.username || 'Athlète';
+          html += '<a href="athlete.html?id=' + a.id + '" class="search-result-row">'
+            + '<div class="athlete-avatar">' + pseudo.charAt(0).toUpperCase() + '</div>'
+            + '<div><div class="athlete-pseudo">' + pseudo + '</div><div class="athlete-meta">' + traductions[currentLang].view_book + '</div></div>'
+            + '<div class="athlete-arrow">' + ARROW_SVG + '</div></a>';
+        });
+        resultsDiv.innerHTML = html;
+      }, 300);
+    }
 
     Chart.defaults.color = '#6b6b72';
     Chart.defaults.font  = { family: "'Barlow Condensed', sans-serif", size: 12 };
@@ -152,7 +409,7 @@
     function barChart(id, labels, data, color) {
       new Chart(document.getElementById(id), {
         type: 'bar',
-        data: { labels, datasets: [{ data, backgroundColor: color + '99', borderColor: color, borderWidth: 1, borderRadius: 2 }] },
+        data: { labels: labels, datasets: [{ data: data, backgroundColor: color + '99', borderColor: color, borderWidth: 1, borderRadius: 2 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
           scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor }, beginAtZero: true } } }
       });
@@ -160,101 +417,125 @@
 
     async function loadStats() {
       try {
-        const res = await fetch('./courses.json');
-        const data = await res.json();
-        const courses = (data.courses || []).sort((a, b) => a.annee - b.annee);
-        if (!courses.length) return;
+        var userRes = await supabaseClient.auth.getUser();
+        var user = userRes.data.user;
 
-        // KPIs
-        const totalKm    = courses.reduce((s, c) => s + (parseFloat(c.dist) || 0), 0);
-        const totalDplus = courses.reduce((s, c) => s + (parseInt(c.dplus) || 0), 0);
-        const nbTrail    = courses.filter(c => c.type === 'Trail').length;
-        const nbRoute    = courses.filter(c => c.type === 'Route').length;
-        const podiums    = courses.filter(c => parseInt(c.classementCat) <= 3).length;
-        const bestClt    = Math.min(...courses.map(c => c.classement));
-        const bestCltC   = courses.find(c => c.classement === bestClt);
-        const distMax    = Math.max(...courses.map(c => c.dist));
-        const distMaxC   = courses.find(c => c.dist === distMax);
-        const bestCat    = Math.min(...courses.map(c => c.classementCat));
-        const bestCatC   = courses.find(c => c.classementCat === bestCat);
+        let lang = 'fr';
+        if (user) {
+          var profileRes = await supabaseClient.from('profiles').select('langue').eq('id', user.id).maybeSingle();
+          if (profileRes.data && profileRes.data.langue) lang = profileRes.data.langue;
+        }
+        appliquerTraductions(lang);
+        var t = traductions[lang];
 
-        document.getElementById('kpi-count').innerHTML    = `${courses.length}`;
-        document.getElementById('kpi-km').innerHTML       = `${Math.round(totalKm)}<span>km</span>`;
-        document.getElementById('kpi-dplus').innerHTML    = `${(totalDplus/1000).toFixed(1)}<span>k+</span>`;
-        document.getElementById('kpi-best').innerHTML     = `${bestClt}<span>e</span>`;
+        var query = supabaseClient.from('courses').select('*').order('annee', { ascending: true });
+        if (user) query = query.eq('user_id', user.id);
+        var res = await query;
+        if (res.error) throw res.error;
+
+        var courses = res.data || [];
+        if (!courses.length) {
+          document.getElementById('podiums-container').innerHTML = '<div class="empty-msg">' + t.empty_msg_init + '</div>';
+          return;
+        }
+
+        var totalKm    = courses.reduce(function(s,c){ return s+(parseFloat(c.dist)||0); }, 0);
+        var totalDplus = courses.reduce(function(s,c){ return s+(parseInt(c.dplus)||0); }, 0);
+        var nbTrail    = courses.filter(function(c){ return c.type==='Trail'; }).length;
+        var nbRoute    = courses.filter(function(c){ return c.type==='Route'; }).length;
+        var podiums    = courses.filter(function(c){ return parseInt(c.classement_cat)<=3; }).length;
+
+        var validClt  = courses.map(function(c){ return parseInt(c.classement); }).filter(function(v){ return !isNaN(v); });
+        var bestClt   = validClt.length ? Math.min.apply(null, validClt) : null;
+        var bestCltC  = bestClt ? courses.find(function(c){ return parseInt(c.classement)===bestClt; }) : null;
+
+        var validDist = courses.map(function(c){ return parseFloat(c.dist); }).filter(function(v){ return !isNaN(v); });
+        var distMax   = validDist.length ? Math.max.apply(null, validDist) : null;
+        var distMaxC  = distMax ? courses.find(function(c){ return parseFloat(c.dist)===distMax; }) : null;
+
+        var validCat  = courses.map(function(c){ return parseInt(c.classement_cat); }).filter(function(v){ return !isNaN(v); });
+        var bestCat   = validCat.length ? Math.min.apply(null, validCat) : null;
+        var bestCatC  = bestCat ? courses.find(function(c){ return parseInt(c.classement_cat)===bestCat; }) : null;
+
+        document.getElementById('kpi-count').innerHTML    = courses.length;
+        document.getElementById('kpi-km').innerHTML       = Math.round(totalKm) + '<span>km</span>';
+        document.getElementById('kpi-dplus').innerHTML    = (totalDplus/1000).toFixed(1) + '<span>k+</span>';
+        document.getElementById('kpi-best').innerHTML     = bestClt ? bestClt + '<span>' + t.th_suff + '</span>' : '—';
         document.getElementById('kpi-best-sub').textContent = bestCltC ? bestCltC.nom : '';
-        document.getElementById('kpi-trail').innerHTML    = `${nbTrail}`;
-        document.getElementById('kpi-route-sub').textContent = `${nbRoute} en route`;
-        document.getElementById('kpi-dist-max').innerHTML = `${distMax}<span>km</span>`;
+        document.getElementById('kpi-trail').innerHTML    = nbTrail;
+        document.getElementById('kpi-route-sub').textContent = nbRoute + t.sub_route_suffix;
+        document.getElementById('kpi-dist-max').innerHTML = distMax ? distMax + '<span>km</span>' : '—';
         document.getElementById('kpi-dist-max-sub').textContent = distMaxC ? distMaxC.nom : '';
-        document.getElementById('kpi-best-cat').innerHTML = `${bestCat}<span>e</span>`;
+        document.getElementById('kpi-best-cat').innerHTML = bestCat ? bestCat + '<span>' + t.th_suff + '</span>' : '—';
         document.getElementById('kpi-best-cat-sub').textContent = bestCatC ? bestCatC.nom : '';
-        document.getElementById('kpi-podiums').innerHTML  = `${podiums}`;
+        document.getElementById('kpi-podiums').innerHTML  = podiums;
 
-        // Années
-        const annees = [...new Set(courses.map(c => c.annee))].sort();
-        const kmParAn    = annees.map(y => courses.filter(c => c.annee === y).reduce((s, c) => s + (parseFloat(c.dist)||0), 0));
-        const nbParAn    = annees.map(y => courses.filter(c => c.annee === y).length);
-        const dplusParAn = annees.map(y => courses.filter(c => c.annee === y).reduce((s, c) => s + (parseInt(c.dplus)||0), 0));
+        var annees     = courses.map(function(c){ return c.annee; }).filter(function(v,i,a){ return v && a.indexOf(v)===i; }).sort();
+        var kmParAn    = annees.map(function(y){ return courses.filter(function(c){ return c.annee===y; }).reduce(function(s,c){ return s+(parseFloat(c.dist)||0); },0); });
+        var nbParAn    = annees.map(function(y){ return courses.filter(function(c){ return c.annee===y; }).length; });
+        var dplusParAn = annees.map(function(y){ return courses.filter(function(c){ return c.annee===y; }).reduce(function(s,c){ return s+(parseInt(c.dplus)||0); },0); });
 
         barChart('chart-km',    annees, kmParAn,    accentColor);
         barChart('chart-nb',    annees, nbParAn,    accent2Color);
         barChart('chart-dplus', annees, dplusParAn, '#7c6fff');
 
-        // % devancés
-        const pct = courses.map(c => Math.round(((c.participants - c.classement) / c.participants) * 1000) / 10);
-        const ptColors  = pct.map(p => p >= 90 ? accentColor + 'dd' : p >= 70 ? '#ffaa00dd' : accent2Color + 'dd');
-        const ptBorders = pct.map(p => p >= 90 ? accentColor : p >= 70 ? '#ffaa00' : accent2Color);
+        var coursesAvecPart = courses.filter(function(c){ return parseInt(c.participants)>0 && parseInt(c.classement)>0; });
+        var pct      = coursesAvecPart.map(function(c){ return Math.round(((parseInt(c.participants)-parseInt(c.classement))/parseInt(c.participants))*1000)/10; });
+        var ptColors = pct.map(function(p){ return p>=90 ? accentColor+'dd' : p>=70 ? '#ffaa00dd' : accent2Color+'dd'; });
+        var ptBorders= pct.map(function(p){ return p>=90 ? accentColor : p>=70 ? '#ffaa00' : accent2Color; });
 
         new Chart(document.getElementById('chart-rank'), {
           type: 'line',
           data: {
-            labels: courses.map(c => c.nom.length > 20 ? c.nom.slice(0,20)+'…' : c.nom),
+            labels: coursesAvecPart.map(function(c){ return c.nom && c.nom.length>20 ? c.nom.slice(0,20)+'…' : (c.nom||'Course'); }),
             datasets: [{ data: pct, borderColor: accentColor, backgroundColor: accentColor+'12', fill: true, tension: 0.3, borderWidth: 2,
               pointRadius: 7, pointHoverRadius: 10, pointBackgroundColor: ptColors, pointBorderColor: ptBorders, pointBorderWidth: 2 }]
           },
           options: {
             responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => {
-              const c = courses[ctx.dataIndex];
-              return [` ${ctx.raw}% devancés`, ` ${c.classement}e / ${c.participants} (${c.type})`];
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) {
+              var c = coursesAvecPart[ctx.dataIndex];
+              var localizedType = c.type === 'Trail' ? t.c_trail : t.c_route;
+              return [' ' + ctx.raw + t.t_tooltip_devances, ' ' + c.classement + t.th_suff + ' / ' + c.participants + ' (' + localizedType + ')'];
             }}}},
             scales: {
               x: { grid: { color: gridColor }, ticks: { font: { family: "'Barlow Condensed'", size: 10 }, maxRotation: 35 } },
-              y: { grid: { color: gridColor }, min: 0, max: 100, ticks: { callback: v => v + '%', stepSize: 20 } }
+              y: { grid: { color: gridColor }, min: 0, max: 100, ticks: { callback: function(v){ return v+'%'; }, stepSize: 20 } }
             }
           }
         });
 
-        // Doughnut
         new Chart(document.getElementById('chart-type'), {
           type: 'doughnut',
-          data: { labels: ['Trail', 'Route'], datasets: [{ data: [nbTrail, nbRoute], backgroundColor: [accentColor+'cc', accent2Color+'cc'], borderColor: ['#0d0d0f'], borderWidth: 3 }] },
+          data: { labels: [t.c_trail, t.c_route], datasets: [{ data: [nbTrail, nbRoute], backgroundColor: [accentColor+'cc', accent2Color+'cc'], borderColor: ['#0d0d0f'], borderWidth: 3 }] },
           options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
-            plugins: { legend: { position: 'bottom', labels: { padding: 20 } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label} : ${ctx.raw} courses` } } } }
+            plugins: { legend: { position: 'bottom', labels: { padding: 20 } }, tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.label + ' : ' + ctx.raw + t.t_tooltip_courses; } } } } }
         });
 
-        // Podiums
-        const topCourses = courses.filter(c => c.classementCat <= 3).sort((a, b) => a.classementCat - b.classementCat);
-        const medals = ['🥇','🥈','🥉'];
-        const container = document.getElementById('podiums-container');
+        var topCourses = courses.filter(function(c){ return parseInt(c.classement_cat)<=3; }).sort(function(a,b){ return parseInt(a.classement_cat)-parseInt(b.classement_cat); });
+        var container = document.getElementById('podiums-container');
+
         if (!topCourses.length) {
-          container.innerHTML = '<div class="empty-msg">Pas encore de podium — ça va venir ! 💪</div>';
+          container.innerHTML = '<div class="empty-msg">' + t.empty_msg_podium + '</div>';
         } else {
-          container.innerHTML = `<div class="podiums-grid">${topCourses.map(c => `
-            <div class="podium-card">
-              <div class="podium-medal">${medals[c.classementCat-1] || '🏅'}</div>
-              <div class="podium-race">${c.nom}</div>
-              <div class="podium-detail">${c.date || c.annee} · ${c.lieu} · ${c.dist}km</div>
-              <div class="podium-rank">${c.classementCat}<small>e cat. ${c.cat}</small></div>
-              <div class="podium-detail">${c.classement}e / ${c.participants} au général</div>
-            </div>`).join('')}</div>`;
+          container.innerHTML = '<div class="podiums-grid">' + topCourses.map(function(c) {
+            var courseId = c.id || c.ID || '';
+            var rank = parseInt(c.classement_cat);
+            return '<div class="podium-card" onclick="window.location=\'fiche-course.html?id=' + courseId + '&from=stats\'">'
+              + '<div>' + trophySVG(rank) + '</div>'
+              + '<div class="podium-race">' + (c.nom||'Sans nom') + '</div>'
+              + '<div class="podium-detail">' + (c.date||c.annee||'—') + ' · ' + (c.lieu||'—') + ' · ' + (c.dist||0) + 'km</div>'
+              + '<div class="podium-rank">' + c.classement_cat + '<span>' + t.th_suff + '</span><small> cat. ' + (c.cat||'') + '</small></div>'
+              + '<div class="podium-detail">' + (c.classement||'—') + t.th_suff + ' / ' + (c.participants||'—') + t.general_suffix + '</div>'
+              + '</div>';
+          }).join('') + '</div>';
         }
 
       } catch(e) {
-        console.error('Erreur chargement stats:', e);
+        console.error('Erreur stats:', e);
       }
     }
+
     loadStats();
   </script>
 </body>

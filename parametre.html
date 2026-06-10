@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paramètres Compte — RunLog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0f; --surface: #141418; --border: #222228;
+      --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; flex: 1; }
+    .logo span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    nav::after { content: ''; flex: 1; display: block; }
+
+    .container { padding: 9rem 4rem 4rem; max-width: 650px; margin: 0 auto; }
+
+    .settings-box { background: var(--surface); border: 1px solid var(--border); padding: 2.5rem; border-radius: 4px; margin-bottom: 2rem; }
+    .settings-box h1, .settings-box h2 { font-family: var(--font-head); font-weight: 900; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+    .settings-box h1 { font-size: 2.2rem; }
+    .settings-box h1 span, .settings-box h2 span { color: var(--accent); }
+    .settings-box h2 { font-size: 1.6rem; border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 2rem; }
+    
+    .form-group { margin-bottom: 1.4rem; }
+    .form-group label { display: block; font-family: var(--font-head); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .form-group input, .form-group select { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 0.8rem 1rem; color: var(--text); font-family: var(--font-body); font-size: 0.95rem; border-radius: 2px; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+    
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .actions-row { display: flex; gap: 1rem; margin-top: 2rem; align-items: center; }
+    .btn { font-family: var(--font-head); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.9rem 2rem; border: none; border-radius: 2px; cursor: pointer; transition: all 0.2s; text-decoration: none; text-align: center; }
+    .btn-primary { background: var(--accent); color: #0d0d0f; border: 2px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-cancel { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 0.9rem 2rem; }
+    .btn-cancel:hover { color: var(--text); border-color: var(--text); }
+
+    .msg { padding: 1rem; border-radius: 2px; margin-bottom: 1.5rem; font-size: 0.9rem; display: none; }
+    .msg-error { background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid var(--accent2); }
+    .msg-success { background: rgba(232,255,71,0.1); color: var(--accent); border: 1px solid var(--accent); }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .8rem; margin-top: 4rem; }
+    .footer-logo { font-family: var(--font-head); font-weight: 900; font-size: 1rem; letter-spacing: .1em; text-transform: uppercase; }
+    .footer-logo span { color: var(--accent); }
+
+    @media(max-width: 900px) {
+      nav { padding: 1rem 1.5rem; } nav ul { gap: 1.5rem; } nav::after { display: none; } .logo { flex: initial; }
+      .container { padding: 7rem 1.5rem 2rem; }
+      footer { flex-direction: column; gap: .5rem; text-align: center; padding: 1.5rem; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <ul>
+      <li><a href="index.html" data-trad="menu_accueil">Accueil</a></li>
+      <li><a href="courses.html" data-trad="menu_courses">Courses</a></li>
+      <li><a href="stats.html" data-trad="menu_stats">Stats</a></li>
+      <li><a href="profile.html" data-trad="menu_profil">Profil</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div id="global-msg" class="msg"></div>
+
+    <div class="settings-box">
+      <h1 id="title-profile">Modifier mes <span>Données</span></h1>
+      
+      <form id="form-update-profile">
+        <div class="form-group">
+          <label id="lbl-username">Nom d'affichage / Pseudo</label>
+          <input type="text" id="update-username" placeholder="Ex: Jean-Chrono" required/>
+        </div>
+        
+        <div class="form-group">
+          <label id="lbl-genre">Genre</label>
+          <select id="update-genre" required>
+            <option value="" id="opt-genre-select">Sélectionner...</option>
+            <option value="F">F</option>
+            <option value="M">M</option>
+            <option value="Autres" id="opt-genre-other">Autres</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-birth">Date de naissance</label>
+          <input type="date" id="update-date-naissance" required/>
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-lang">Langue de l'application</label>
+          <select id="update-langue" required>
+            <option value="fr">Français 🇫🇷</option>
+            <option value="en">English 🇬🇧</option>
+            <option value="es">Español 🇪🇸</option>
+          </select>
+        </div>
+
+        <div class="actions-row">
+          <button type="submit" class="btn btn-primary" id="btn-save-settings">Enregistrer le profil</button>
+          <a href="profile.html" class="btn btn-cancel" id="btn-cancel-txt">Annuler</a>
+        </div>
+      </form>
+
+      <h2 id="title-security">Sécurité & <span>Mot de passe</span></h2>
+      <form id="form-update-password">
+        <div class="form-group">
+          <label id="lbl-old-pass">Ancien mot de passe</label>
+          <input type="password" id="old-password" required/>
+        </div>
+        <div class="form-group">
+          <label id="lbl-new-pass">Nouveau mot de passe</label>
+          <input type="password" id="new-password" required minlength="6"/>
+        </div>
+        <div class="form-group">
+          <label id="lbl-confirm-pass">Confirmer le nouveau mot de passe</label>
+          <input type="password" id="confirm-password" required minlength="6"/>
+        </div>
+        <div class="actions-row">
+          <button type="submit" class="btn btn-primary" id="btn-save-password">Mettre à jour le mot de passe</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Run<span>Log</span></div>
+    <div id="footer-credit">Fait avec ❤️</div>
+  </footer>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+    let currentLang = 'fr';
+
+    // DICTIONNAIRE MULTILINGUE COMPLET
+    const traductions = {
+      fr: {
+        menu_accueil: "Accueil", menu_courses: "Courses", menu_stats: "Stats", menu_profil: "Profil",
+        title_profile: "Modifier mes <span>Données</span>",
+        lbl_username: "Nom d'affichage / Pseudo", ph_username: "Ex: Jean-Chrono",
+        lbl_genre: "Genre", opt_genre_select: "Sélectionner...", opt_genre_other: "Autres",
+        lbl_birth: "Date de naissance", lbl_lang: "Langue de l'application",
+        btn_save_settings: "Enregistrer le profil", btn_save_settings_loading: "Enregistrement...",
+        btn_cancel: "Annuler",
+        title_security: "Sécurité & <span>Mot de passe</span>",
+        lbl_old_pass: "Ancien mot de passe", ph_old_pass: "Saisis ton mot de passe actuel",
+        lbl_new_pass: "Nouveau mot de passe", ph_new_pass: "Minimum 6 caractères",
+        lbl_confirm_pass: "Confirmer le nouveau mot de passe", ph_confirm_pass: "Répète le nouveau mot de passe",
+        btn_save_password: "Mettre à jour le mot de passe", btn_save_password_checking: "Vérification...",
+        footer_credit: "Fait avec ❤️",
+        msg_profile_success: "Modifications du profil enregistrées !",
+        msg_pass_mismatch: "⚠️ Les deux nouveaux mots de passe ne correspondent pas.",
+        msg_old_pass_error: "❌ L'ancien mot de passe saisi est incorrect.",
+        msg_update_error: "❌ Erreur lors de la mise à jour : ",
+        msg_pass_success: "🔒 Ton mot de passe a été modifié avec succès !",
+        email_subject: "Sécurité RunLog : Votre mot de passe a été modifié",
+        email_body_hi: "Bonjour,",
+        email_body_main: "Le mot de passe de votre compte <strong>RunLog</strong> vient d'être modifié avec succès.",
+        email_body_warn: "Si vous n'êtes pas à l'origine de cette action, contactez notre support immédiatement.",
+        email_body_team: "L'équipe RunLog"
+      },
+      en: {
+        menu_accueil: "Home", menu_courses: "Races", menu_stats: "Stats", menu_profil: "Profile",
+        title_profile: "Edit My <span>Details</span>",
+        lbl_username: "Display Name / Username", ph_username: "e.g., John-Chrono",
+        lbl_genre: "Gender", opt_genre_select: "Select...", opt_genre_other: "Other",
+        lbl_birth: "Date of Birth", lbl_lang: "Application Language",
+        btn_save_settings: "Save Profile", btn_save_settings_loading: "Saving...",
+        btn_cancel: "Cancel",
+        title_security: "Security & <span>Password</span>",
+        lbl_old_pass: "Old Password", ph_old_pass: "Enter your current password",
+        lbl_new_pass: "New Password", ph_new_pass: "Minimum 6 characters",
+        lbl_confirm_pass: "Confirm New Password", ph_confirm_pass: "Repeat new password",
+        btn_save_password: "Update Password", btn_save_password_checking: "Checking...",
+        footer_credit: "Made with ❤️",
+        msg_profile_success: "Profile modifications saved successfully!",
+        msg_pass_mismatch: "⚠️ The two new passwords do not match.",
+        msg_old_pass_error: "❌ The old password entered is incorrect.",
+        msg_update_error: "❌ Error during update: ",
+        msg_pass_success: "🔒 Your password has been changed successfully!",
+        email_subject: "RunLog Security: Your password has been modified",
+        email_body_hi: "Hello,",
+        email_body_main: "The password for your <strong>RunLog</strong> account has been successfully updated.",
+        email_body_warn: "If you did not initiate this change, please contact our support team immediately.",
+        email_body_team: "The RunLog Team"
+      },
+      es: {
+        menu_accueil: "Inicio", menu_courses: "Carreras", menu_stats: "Estadísticas", menu_profil: "Perfil",
+        title_profile: "Modificar mis <span>Datos</span>",
+        lbl_username: "Nombre de pantalla / Apodo", ph_username: "Ej: Juan-Chrono",
+        lbl_genre: "Género", opt_genre_select: "Seleccionar...", opt_genre_other: "Otros",
+        lbl_birth: "Fecha de nacimiento", lbl_lang: "Idioma de la aplicación",
+        btn_save_settings: "Guardar perfil", btn_save_settings_loading: "Guardando...",
+        btn_cancel: "Cancelar",
+        title_security: "Seguridad & <span>Contraseña</span>",
+        lbl_old_pass: "Contraseña anterior", ph_old_pass: "Introduce tu contraseña actual",
+        lbl_new_pass: "Nueva contraseña", ph_new_pass: "Mínimo 6 caracteres",
+        lbl_confirm_pass: "Confirmar nueva contraseña", ph_confirm_pass: "Repite la nueva contraseña",
+        btn_save_password: "Actualizar contraseña", btn_save_password_checking: "Verificando...",
+        footer_credit: "Hecho con ❤️",
+        msg_profile_success: "¡Cambios del perfil guardados correctamente!",
+        msg_pass_mismatch: "⚠️ Las dos nuevas contraseñas no coinciden.",
+        msg_old_pass_error: "❌ La contraseña anterior introducida es incorrecta.",
+        msg_update_error: "❌ Error al actualizar: ",
+        msg_pass_success: "¡🔒 Tu contraseña ha sido cambiada con éxito!",
+        email_subject: "Seguridad de RunLog: Su contraseña ha sido modificada",
+        email_body_hi: "Hola,",
+        email_body_main: "La contraseña de su cuenta de <strong>RunLog</strong> ha sido modificada correctamente.",
+        email_body_warn: "Si no ha realizado esta acción, póngase en contacto con nuestro soporte de inmediato.",
+        email_body_team: "El equipo de RunLog"
+      }
+    };
+
+    function appliquerTraductions(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      const t = traductions[lang] || traductions['fr'];
+
+      // Navigation
+      document.querySelectorAll('[data-trad]').forEach(el => {
+        const key = el.getAttribute('data-trad');
+        if (t[key]) el.textContent = t[key];
+      });
+
+      // Titres & Labels
+      document.getElementById('title-profile').innerHTML = t.title_profile;
+      document.getElementById('lbl-username').textContent = t.lbl_username;
+      document.getElementById('lbl-genre').textContent = t.lbl_genre;
+      document.getElementById('opt-genre-select').textContent = t.opt_genre_select;
+      document.getElementById('opt-genre-other').textContent = t.opt_genre_other;
+      document.getElementById('lbl-birth').textContent = t.lbl_birth;
+      document.getElementById('lbl-lang').textContent = t.lbl_lang;
+      document.getElementById('btn-save-settings').textContent = t.btn_save_settings;
+      document.getElementById('btn-cancel-txt').textContent = t.btn_cancel;
+      
+      document.getElementById('title-security').innerHTML = t.title_security;
+      document.getElementById('lbl-old-pass').textContent = t.lbl_old_pass;
+      document.getElementById('lbl-new-pass').textContent = t.lbl_new_pass;
+      document.getElementById('lbl-confirm-pass').textContent = t.lbl_confirm_pass;
+      document.getElementById('btn-save-password').textContent = t.btn_save_password;
+      document.getElementById('footer-credit').textContent = t.footer_credit;
+
+      // Placeholders
+      document.getElementById('update-username').placeholder = t.ph_username;
+      document.getElementById('old-password').placeholder = t.ph_old_pass;
+      document.getElementById('new-password').placeholder = t.ph_new_pass;
+      document.getElementById('confirm-password').placeholder = t.ph_confirm_pass;
+    }
+
+    function showMessage(text, isError = false) {
+      const msgDiv = document.getElementById('global-msg');
+      if (msgDiv) {
+        msgDiv.textContent = text;
+        msgDiv.className = `msg ${isError ? 'msg-error' : 'msg-success'}`;
+        msgDiv.style.display = 'block';
+        window.scrollTo(0,0);
+      }
+    }
+
+    function hideMessage() {
+      const msgDiv = document.getElementById('global-msg');
+      if (msgDiv) msgDiv.style.display = 'none';
+    }
+
+    async function securiserPage() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        window.location.href = 'profile.html';
+        return;
+      }
+      currentUser = user;
+
+      try {
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('username, genre, date_naissance, langue')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+
+        let langSetup = 'fr';
+        if (profile) {
+          if (profile.username) document.getElementById('update-username').value = profile.username;
+          if (profile.genre) document.getElementById('update-genre').value = profile.genre;
+          if (profile.date_naissance) document.getElementById('update-date-naissance').value = profile.date_naissance;
+          if (profile.langue) langSetup = profile.langue;
+        } else {
+          document.getElementById('update-username').value = currentUser.email.split('@')[0];
+        }
+        
+        document.getElementById('update-langue').value = langSetup;
+        appliquerTraductions(langSetup);
+
+      } catch (err) {
+        console.error(err);
+        appliquerTraductions('fr');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      securiserPage();
+
+      // Enregistrement des données du profil
+      document.getElementById('form-update-profile').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideMessage();
+        const t = traductions[currentLang] || traductions['fr'];
+        const btn = document.getElementById('btn-save-settings');
+        btn.disabled = true;
+        btn.textContent = t.btn_save_settings_loading;
+
+        const username = document.getElementById('update-username').value.trim();
+        const genre = document.getElementById('update-genre').value;
+        const date_naissance = document.getElementById('update-date-naissance').value;
+        const langue = document.getElementById('update-langue').value;
+
+        const { error: authError } = await supabaseClient.auth.updateUser({
+          data: { username: username }
+        });
+
+        if (authError) {
+          showMessage(authError.message, true);
+          btn.disabled = false;
+          btn.textContent = t.btn_save_settings;
+          return;
+        }
+
+        const { error: profileError } = await supabaseClient
+          .from('profiles')
+          .upsert({
+            id: currentUser.id,
+            username: username,
+            genre: genre,
+            date_naissance: date_naissance,
+            langue: langue, 
+            updated_at: new Date().toISOString()
+          });
+
+        if (profileError) {
+          showMessage(profileError.message, true);
+          btn.disabled = false;
+          btn.textContent = t.btn_save_settings;
+        } else {
+          await supabaseClient.auth.refreshSession();
+          showMessage(t.msg_profile_success, false);
+          setTimeout(() => { window.location.href = 'profile.html'; }, 1200);
+        }
+      });
+
+      // Gestion du mot de passe
+      document.getElementById('form-update-password').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideMessage();
+        const t = traductions[currentLang] || traductions['fr'];
+
+        const oldPass = document.getElementById('old-password').value;
+        const newPass = document.getElementById('new-password').value;
+        const confirmPass = document.getElementById('confirm-password').value;
+        const btnPass = document.getElementById('btn-save-password');
+
+        if (newPass !== confirmPass) {
+          showMessage(t.msg_pass_mismatch, true);
+          return;
+        }
+
+        btnPass.disabled = true;
+        btnPass.textContent = t.btn_save_password_checking;
+
+        const { error: checkError } = await supabaseClient.auth.signInWithPassword({
+          email: currentUser.email,
+          password: oldPass
+        });
+
+        if (checkError) {
+          showMessage(t.msg_old_pass_error, true);
+          btnPass.disabled = false;
+          btnPass.textContent = t.btn_save_password;
+          return;
+        }
+
+        const { error: updateError } = await supabaseClient.auth.updateUser({
+          password: newPass
+        });
+
+        if (updateError) {
+          showMessage(t.msg_update_error + updateError.message, true);
+          btnPass.disabled = false;
+          btnPass.textContent = t.btn_save_password;
+          return;
+        }
+
+        // Notification Email via Brevo (traduit en fonction de la configuration)
+        try {
+          await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              'accept': 'application/json',
+              'api-key': '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',
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              sender: { name: "RunLog", email: "gauthierdorval@gmail.com" },
+              to: [{ email: currentUser.email }],
+              subject: t.email_subject,
+              htmlContent: `
+                <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 8px;">
+                  <h2>${t.email_body_hi}</h2>
+                  <p>${t.email_body_main}</p>
+                  <p style="color: #6b6b72; font-size: 0.9rem;">${t.email_body_warn}</p>
+                  <br><hr style="border: none; border-top: 1px solid #eee;">
+                  <p style="font-size: 0.85rem; color: #999;">${t.email_body_team}</p>
+                </div>`
+            })
+          });
+        } catch (emailErr) {
+          console.error("Échec de l'envoi de la notification e-mail:", emailErr);
+        }
+
+        showMessage(t.msg_pass_success);
+        document.getElementById('form-update-password').reset();
+        btnPass.disabled = false;
+        btnPass.textContent = t.btn_save_password;
+      });
+
+      // Permet de tester le changement de langue à la volée sur les éléments statiques avant soumission
+      document.getElementById('update-langue').addEventListener('change', (e) => {
+        appliquerTraductions(e.target.value);
+      });
+    });
+  </script>
+</body>
+</html>
