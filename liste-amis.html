@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RunLog — Mes Amis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0f; --surface: #141418; --border: #222228;
+      --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100;
+    }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
+
+    .container { max-width: 800px; margin: 120px auto 4rem auto; padding: 0 2rem; }
+
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+    .page-title-block { display: flex; flex-direction: column; gap: 0.3rem; }
+    .page-title { font-family: var(--font-head); font-weight: 900; font-size: 3rem; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1; }
+    .page-subtitle { font-size: 0.85rem; color: var(--muted); }
+
+    .tabs { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2rem; }
+    .tab-btn {
+      flex: 1; background: var(--surface); border: none; padding: 0.9rem 1rem;
+      font-family: var(--font-head); font-weight: 700; font-size: 0.85rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .tab-btn:hover { color: var(--text); background: #1a1a1f; }
+    .tab-btn.active { background: var(--bg); color: var(--accent); }
+    .tab-badge { background: var(--accent); color: var(--bg); font-size: 0.7rem; font-weight: 900; padding: 0.1rem 0.4rem; border-radius: 2px; min-width: 18px; text-align: center; line-height: 1.4; }
+    .tab-badge.red { background: #ff4a4a; color: #fff; animation: notif-pulse 2s ease-in-out infinite; }
+
+    /* ── RECHERCHE AUTOCOMPLETE ───────────────────────────────────────── */
+    .search-autocomplete-wrap { position: relative; margin-bottom: 2rem; }
+    .search-autocomplete-inner {
+      display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .search-autocomplete-wrap.focused .search-autocomplete-inner { border-color: var(--accent); }
+    .search-icon-wrap { background: var(--surface); display: flex; align-items: center; padding: 0 1rem; color: var(--muted); font-size: 0.9rem; flex-shrink: 0; }
+    .search-autocomplete-input {
+      flex: 1; background: var(--surface); border: none;
+      padding: 1rem 1rem 1rem 0; font-family: var(--font-body);
+      font-size: 0.9rem; color: var(--text); outline: none;
+    }
+    .search-autocomplete-input::placeholder { color: var(--muted); }
+    .search-clear-btn {
+      background: var(--surface); border: none; padding: 0 1.2rem;
+      color: var(--muted); cursor: pointer; font-size: 0.85rem;
+      display: none; align-items: center; transition: color 0.2s;
+    }
+    .search-clear-btn:hover { color: var(--text); }
+
+    .search-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--border); border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 1px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      z-index: 200; overflow: hidden;
+      opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .search-dropdown.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    .drop-result-row {
+      background: var(--surface); padding: 0.85rem 1.2rem;
+      display: flex; align-items: center; gap: 1rem;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .drop-result-row:hover { background: #1a1a1f; }
+    .drop-result-row:hover .drop-name { color: var(--accent); }
+    .drop-result-row:hover .drop-avatar { border-color: var(--accent); }
+
+    .drop-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-weight: 900; font-size: 1rem;
+      color: var(--accent); flex-shrink: 0; transition: border-color 0.15s;
+    }
+    .drop-info { flex: 1; display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+    .drop-name { font-family: var(--font-head); font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; transition: color 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drop-meta { font-size: 0.72rem; color: var(--muted); }
+    .drop-action { flex-shrink: 0; }
+    .drop-btn-add {
+      font-family: var(--font-head); font-weight: 700; font-size: 0.75rem;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.8rem;
+      background: transparent; border: 1px solid var(--accent); color: var(--accent);
+      cursor: pointer; transition: all 0.2s; border-radius: 2px;
+    }
+    .drop-btn-add:hover:not(:disabled):not(.sent) { background: var(--accent); color: var(--bg); }
+    .drop-btn-add.sent { border-color: var(--muted); color: var(--muted); cursor: default; }
+    .drop-btn-add:disabled { opacity: 0.6; cursor: default; }
+    .drop-arrow { color: var(--muted); font-size: 0.9rem; margin-left: 0.3rem; flex-shrink: 0; }
+
+    .drop-loading { padding: 1.2rem; display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 0.82rem; background: var(--surface); }
+    .drop-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+
+    .spinner-sm { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .friends-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .friend-card { background: var(--surface); padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1.5rem; cursor: pointer; transition: background 0.15s; }
+    .friend-card:hover { background: #1a1a1f; }
+    .friend-card:hover .friend-arrow { color: var(--accent); transform: translateX(4px); }
+    .friend-card:hover .friend-avatar { border-color: var(--accent); }
+    .friend-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--bg); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 1.3rem; color: var(--accent); flex-shrink: 0; transition: border-color 0.2s; }
+    .friend-info { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+    .friend-name { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; }
+    .friend-cat { font-size: 0.78rem; color: var(--muted); }
+    .friend-stats { display: flex; gap: 1.5rem; align-items: center; }
+    .friend-stat { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+    .friend-stat-val { font-family: var(--font-head); font-weight: 900; font-size: 1.1rem; line-height: 1; }
+    .friend-stat-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .friend-arrow { color: var(--muted); font-size: 1.2rem; transition: all 0.2s; flex-shrink: 0; }
+    .friend-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .btn-more { background: transparent; border: 1px solid transparent; color: var(--muted); width: 32px; height: 32px; border-radius: 4px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; line-height: 1; }
+    .btn-more:hover { border-color: var(--border); color: var(--text); background: var(--bg); }
+    .confirm-remove { display: none; align-items: center; gap: 0.5rem; background: rgba(255,74,74,0.06); border: 1px solid rgba(255,74,74,0.25); padding: 0.35rem 0.7rem; border-radius: 4px; }
+    .confirm-remove.visible { display: flex; }
+    .confirm-remove-label { font-family: var(--font-head); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: #ff4a4a; white-space: nowrap; }
+    .btn-confirm-yes, .btn-confirm-no { font-family: var(--font-head); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; padding: 0.25rem 0.6rem; border-radius: 2px; transition: all 0.15s; }
+    .btn-confirm-yes { background: #ff4a4a; color: #fff; }
+    .btn-confirm-yes:hover { background: #e03030; }
+    .btn-confirm-no { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-confirm-no:hover { color: var(--text); border-color: var(--muted); }
+
+    .requests-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .request-card { background: var(--surface); padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1.5rem; }
+    .request-info { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+    .request-name { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .request-meta { font-size: 0.78rem; color: var(--muted); }
+    .request-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn-accept, .btn-decline { font-family: var(--font-head); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1rem; border: none; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+    .btn-accept { background: var(--accent); color: var(--bg); }
+    .btn-accept:hover { background: #d4eb30; }
+    .btn-accept:disabled, .btn-decline:disabled { opacity: 0.5; cursor: default; }
+    .btn-decline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-decline:hover { border-color: #ff4a4a; color: #ff4a4a; }
+
+    .empty-state { background: var(--surface); border: 1px solid var(--border); padding: 4rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .empty-icon { font-size: 3rem; opacity: 0.3; }
+    .empty-title { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .empty-sub { font-size: 0.85rem; color: var(--muted); max-width: 280px; line-height: 1.6; }
+
+    .loading { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 0.75rem; color: var(--muted); font-size: 0.85rem; }
+    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--surface); border: 1px solid var(--border); padding: 1rem 1.5rem; font-family: var(--font-head); font-size: 0.9rem; letter-spacing: 0.05em; z-index: 999; transform: translateY(120px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--accent); color: var(--accent); }
+    .toast.error { border-color: #ff4a4a; color: #ff4a4a; }
+
+    @media(max-width: 768px) {
+      nav { padding: 1rem 1.5rem; } nav ul { gap: 1.5rem; }
+      .container { padding: 0 1rem; }
+      .page-title { font-size: 2.2rem; }
+      .friend-stats { display: none; }
+      .friend-card, .request-card { padding: 1.2rem; }
+      .request-actions { flex-direction: column; gap: 0.4rem; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="notifications.js"></script>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+    </div>
+    <ul id="nav-links">
+      <li><a href="index.html" id="nav-home" data-trad="menu_accueil">Accueil</a></li>
+      <li><a href="courses.html" id="nav-runs" data-trad="menu_courses">Courses</a></li>
+      <li><a href="stats.html" id="nav-stats" data-trad="nav-stats">Stats</a></li>
+      <li><a href="profile.html" id="nav-profile" class="active" data-trad="nav-profile">Profil</a></li>
+    </ul>
+    <div class="nav-actions-empty"></div>
+  </nav>
+
+  <div class="container">
+
+    <div class="page-header">
+      <div class="page-title-block">
+        <div class="page-title" id="page-title">Mes Amis</div>
+        <div class="page-subtitle" id="page-subtitle">Suis les performances de tes partenaires d'entraînement</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('amis')" id="tab-amis">
+        👥 <span id="btn-lbl-amis">Amis</span> <span class="tab-badge" id="badge-amis">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('demandes')" id="tab-demandes">
+        🔔 <span id="btn-lbl-demandes">Demandes</span> <span class="tab-badge red" id="badge-demandes" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('recherche')" id="tab-recherche">
+        🔍 <span id="btn-lbl-recherche">Rechercher</span>
+      </button>
+    </div>
+
+    <div id="section-amis" class="section active">
+      <div id="friends-loading" class="loading"><div class="spinner"></div> <span class="lbl-loading">Chargement…</span></div>
+      <div id="friends-container" style="display:none"></div>
+    </div>
+
+    <div id="section-demandes" class="section">
+      <div id="demandes-loading" class="loading"><div class="spinner"></div> <span class="lbl-loading">Chargement…</span></div>
+      <div id="demandes-container" style="display:none"></div>
+    </div>
+
+    <div id="section-recherche" class="section">
+      <div class="search-autocomplete-wrap" id="search-wrap">
+        <div class="search-autocomplete-inner">
+          <div class="search-icon-wrap">🔍</div>
+          <input
+            id="search-input"
+            class="search-autocomplete-input"
+            type="text"
+            placeholder="Tape 2 lettres pour chercher un athlète…"
+            maxlength="40"
+            autocomplete="off"
+            oninput="onSearchInput(this.value)"
+          />
+          <button class="search-clear-btn" id="search-clear" title="Effacer">✕</button>
+        </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    var supabaseClient;
+    var currentUserId = null;
+    var amisExistantsCache = {};
+    var searchTimeout = null;
+    var currentLang = 'fr';
+
+    const translations = {
+      fr: {
+        nav_home: "Accueil", nav_runs: "Courses", nav_stats: "Stats", nav_profile: "Profil",
+        page_title: "Mes Amis", page_subtitle: "Suis les performances de tes partenaires d'entraînement",
+        tab_amis: "Amis", tab_demandes: "Demandes", tab_recherche: "Rechercher",
+        loading: "Chargement…", searching: "Recherche…",
+        search_ph: "Tape 2 lettres pour chercher un athlète…",
+        no_athlete: "Aucun athlète trouvé", err_search: "Erreur de recherche",
+        already_friends: "Déjà amis ✓", request_sent: "Demande envoyée", add_friend: "Ajouter +",
+        toast_req_success: "Demande d'ami envoyée !", toast_req_exists: "Une demande existe déjà.",
+        toast_req_err: "Erreur lors de l'envoi", toast_remove_success: "Ami supprimé.",
+        toast_remove_err: "Erreur lors de la suppression",
+        lbl_courses: "Courses", lbl_km: "km", lbl_remove_confirm: "Supprimer ?",
+        lbl_yes: "Oui", lbl_no: "Non", btn_accept: "Accepter", btn_decline: "Refuser",
+        empty_friends_title: "Aucun ami pour l'instant", empty_friends_sub: "Utilise l'onglet Rechercher pour trouver d'autres coureurs.",
+        empty_req_title: "Aucune demande en attente", empty_req_sub: "Les nouvelles demandes d'amis apparaîtront ici.",
+        err_load: "Erreur de chargement",
+        cat_minime: "Minime", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Espoir (ES)",
+        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "Catégorie non renseignée",
+        date_format: 'fr-FR', date_options: {day:'numeric', month:'long'}
+      },
+      en: {
+        nav_home: "Home", nav_runs: "Runs", nav_stats: "Stats", nav_profile: "Profile",
+        page_title: "My Friends", page_subtitle: "Follow your training partners' performances",
+        tab_amis: "Friends", tab_demandes: "Requests", tab_recherche: "Search",
+        loading: "Loading…", searching: "Searching…",
+        search_ph: "Type 2 letters to search for an athlete…",
+        no_athlete: "No athlete found", err_search: "Search error",
+        already_friends: "Already friends ✓", request_sent: "Request sent", add_friend: "Add +",
+        toast_req_success: "Friend request sent!", toast_req_exists: "A request already exists.",
+        toast_req_err: "Error sending request", toast_remove_success: "Friend removed.",
+        toast_remove_err: "Error removing friend",
+        lbl_runs: "Runs", lbl_km: "km", lbl_remove_confirm: "Remove?",
+        lbl_yes: "Yes", lbl_no: "No", btn_accept: "Accept", btn_decline: "Decline",
+        empty_friends_title: "No friends yet", empty_friends_sub: "Use the Search tab to find other runners.",
+        empty_req_title: "No pending requests", empty_req_sub: "New friend requests will show up here.",
+        err_load: "Loading error",
+        cat_minime: "Youth", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Hopeful (ES)",
+        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "Category not specified",
+        date_format: 'en-US', date_options: {day:'numeric', month:'long'}
+      },
+      es: {
+        nav_home: "Inicio", nav_runs: "Carreras", nav_stats: "Estadísticas", nav_profile: "Perfil",
+        page_title: "Mis Amigos", page_subtitle: "Sigue el rendimiento de tus compañeros de entrenamiento",
+        tab_amis: "Amigos", tab_demandes: "Solicitudes", tab_recherche: "Buscar",
+        loading: "Cargando…", searching: "Buscando…",
+        search_ph: "Escribe 2 letras para buscar un atleta…",
+        no_athlete: "No se encontró ningún atleta", err_search: "Error de búsqueda",
+        already_friends: "Ya son amigos ✓", request_sent: "Solicitud enviada", add_friend: "Añadir +",
+        toast_req_success: "¡Solicitud de amistad enviada!", toast_req_exists: "Ya existe una solicitud.",
+        toast_req_err: "Error al enviar la solicitud", toast_remove_success: "Amigo eliminado.",
+        toast_remove_err: "Error al eliminar amigo",
+        lbl_runs: "Carreras", lbl_km: "km", lbl_remove_confirm: "¿Eliminar?",
+        lbl_yes: "Sí", lbl_no: "No", btn_accept: "Aceptar", btn_decline: "Rechazar",
+        empty_friends_title: "Sin amigos por ahora", empty_friends_sub: "Utiliza la pestaña Buscar para encontrar otros corredores.",
+        empty_req_title: "No hay solicitudes pendientes", empty_req_sub: "Las nuevas solicitudes de amistad aparecerán aquí.",
+        err_load: "Error de carga",
+        cat_minime: "Mínimo", cat_cadet: "Cadete (CA)", cat_junior: "Junior (JU)", cat_espoir: "Promesa (ES)",
+        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "Categoría no especificada",
+        date_format: 'es-ES', date_options: {day:'numeric', month:'long'}
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
+      const t = translations[currentLang];
+
+      if(document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
+      if(document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
+      if(document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
+      if(document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
+
+      if(document.getElementById('page-title')) document.getElementById('page-title').textContent = t.page_title;
+      if(document.getElementById('page-subtitle')) document.getElementById('page-subtitle').textContent = t.page_subtitle;
+
+      if(document.getElementById('btn-lbl-amis')) document.getElementById('btn-lbl-amis').textContent = t.tab_amis;
+      if(document.getElementById('btn-lbl-demandes')) document.getElementById('btn-lbl-demandes').textContent = t.tab_demandes;
+      if(document.getElementById('btn-lbl-recherche')) document.getElementById('btn-lbl-recherche').textContent = t.tab_recherche;
+
+      document.querySelectorAll('.lbl-loading').forEach(el => el.textContent = t.loading);
+      if(document.getElementById('search-input')) document.getElementById('search-input').placeholder = t.search_ph;
+
+      if (document.getElementById('friends-container') && document.getElementById('friends-container').style.display !== 'none') chargerAmis();
+      if (document.getElementById('demandes-container') && document.getElementById('demandes-container').style.display !== 'none') chargerDemandes();
+    }
+
+    try {
+      if (typeof SUPABASE_URL !== 'undefined') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClientInstance = supabaseClient;
+      }
+    } catch(e) { console.error(e); }
+
+    function calculerCategorie(d) {
+      if (!d) return null;
+      var age = new Date().getFullYear() - parseInt(d.split('-')[0]);
+      if (isNaN(age)) return null;
+      const t = translations[currentLang];
+      if (age < 16)  return t.cat_minime;
+      if (age <= 17) return t.cat_cadet;
+      if (age <= 19) return t.cat_junior;
+      if (age <= 22) return t.cat_espoir;
+      if (age <= 34) return t.cat_senior;
+      if (age <= 39) return t.cat_master + " 0 (M0)";
+      if (age <= 44) return t.cat_master + " 1 (M1)";
+      if (age <= 49) return t.cat_master + " 2 (M2)";
+      if (age <= 54) return t.cat_master + " 3 (M3)";
+      if (age <= 59) return t.cat_master + " 4 (M4)";
+      if (age <= 64) return t.cat_master + " 5 (M5)";
+      if (age <= 69) return t.cat_master + " 6 (M6)";
+      if (age <= 74) return t.cat_master + " 7 (M7)";
+      if (age <= 79) return t.cat_master + " 8 (M8)";
+      return t.cat_master + " 9+ (M9)";
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showToast(msg, type) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (type ? ' ' + type : '');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(function(){ t.className = 'toast'; }, 3000);
+    }
+
+    function switchTab(tab) {
+      ['amis','demandes','recherche'].forEach(function(id) {
+        document.getElementById('tab-' + id).classList.remove('active');
+        document.getElementById('section-' + id).classList.remove('active');
+      });
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('section-' + tab).classList.add('active');
+      if (tab === 'amis' && window.supprimerToutesLesNotifsAmis) window.supprimerToutesLesNotifsAmis();
+      if (tab === 'recherche') setTimeout(function(){ document.getElementById('search-input').focus(); }, 50);
+    }
+
+    function showDropdown() {
+      document.getElementById('search-dropdown').classList.add('visible');
+      document.getElementById('search-wrap').classList.add('focused');
+    }
+    function hideDropdown() {
+      document.getElementById('search-dropdown').classList.remove('visible');
+      document.getElementById('search-wrap').classList.remove('focused');
+    }
+
+    function onSearchInput(val) {
+      var clearBtn = document.getElementById('search-clear');
+      clearBtn.style.display = val.length > 0 ? 'flex' : 'none';
+      clearTimeout(searchTimeout);
+      var dropdown = document.getElementById('search-dropdown');
+      const t = translations[currentLang];
+
+      if (val.trim().length < 2) { hideDropdown(); dropdown.innerHTML = ''; return; }
+
+      dropdown.innerHTML = '<div class="drop-loading"><div class="spinner-sm"></div> ' + t.searching + '</div>';
+      showDropdown();
+
+      searchTimeout = setTimeout(async function() {
+        try {
+          var res = await supabaseClient
+            .from('profiles')
+            .select('id, username, date_naissance')
+            .ilike('username', '%' + val.trim() + '%')
+            .neq('id', currentUserId)
+            .limit(8);
+
+          if (res.error) throw res.error;
+          var results = res.data || [];
+
+          if (results.length === 0) {
+            dropdown.innerHTML = '<div class="drop-empty">' + t.no_athlete + '</div>';
+            return;
+          }
+
+          var html = '';
+          results.forEach(function(p) {
+            var pseudo   = escapeHtml(p.username || 'Athlète');
+            var initiale = (p.username || '?').charAt(0).toUpperCase();
+            var cat      = escapeHtml(calculerCategorie(p.date_naissance) || t.cat_no_date);
+            var statut   = amisExistantsCache[p.id];
+
+            var btnHtml;
+            if (statut === 'accepte') {
+              btnHtml = '<button class="drop-btn-add sent" disabled>' + t.already_friends + '</button>';
+            } else if (statut === 'en_attente') {
+              btnHtml = '<button class="drop-btn-add sent" disabled>' + t.request_sent + '</button>';
+            } else {
+              btnHtml = '<button class="drop-btn-add" onclick="envoyerDemandeDropdown(\'' + p.id + '\', event, this)">' + t.add_friend + '</button>';
+            }
+
+            html +=
+              '<div class="drop-result-row" onclick="naviguerVersAthlete(\'' + p.id + '\', event)">' +
+                '<div class="drop-avatar">' + initiale + '</div>' +
+                '<div class="drop-info">' +
+                  '<div class="drop-name">' + pseudo + '</div>' +
+                  '<div class="drop-meta">' + cat + '</div>' +
+                '</div>' +
+                '<div class="drop-action">' + btnHtml + '</div>' +
+                '<span class="drop-arrow">→</span>' +
+              '</div>';
+          });
+
+          dropdown.innerHTML = html;
+
+        } catch(err) {
+          dropdown.innerHTML = '<div class="drop-empty">' + t.err_search + '</div>';
+          console.error(err);
+        }
+      }, 300);
+    }
+
+    function naviguerVersAthlete(id, e) {
+      if (e && e.target.closest('button')) return;
+      window.location.href = 'athlete.html?id=' + id + '&from=amis';
+    }
+
+    async function envoyerDemandeDropdown(targetId, e, btn) {
+      e.stopPropagation();
+      btn.disabled = true;
+      btn.textContent = '…';
+      const t = translations[currentLang];
+      try {
+        var res = await supabaseClient.from('amis').insert({
+          demandeur_id: currentUserId, receveur_id: targetId, statut: 'en_attente'
+        });
+        if (res.error) throw res.error;
+        btn.textContent = t.request_sent;
+        btn.className = 'drop-btn-add sent';
+        amisExistantsCache[targetId] = 'en_attente';
+        showToast(t.toast_req_success, 'success');
+      } catch(err) {
+        btn.disabled = false;
+        btn.textContent = t.add_friend;
+        if (err.code === '23505') {
+          btn.textContent = t.request_sent; btn.className = 'drop-btn-add sent';
+          showToast(t.toast_req_exists, '');
+        } else { showToast(t.toast_req_err, 'error'); console.error(err); }
+      }
+    }
+
+    async function chargerRelationsExistantes() {
+      try {
+        var res = await supabaseClient
+          .from('amis').select('demandeur_id, receveur_id, statut')
+          .or('demandeur_id.eq.' + currentUserId + ',receveur_id.eq.' + currentUserId);
+        amisExistantsCache = {};
+        (res.data || []).forEach(function(r) {
+          var other = r.demandeur_id === currentUserId ? r.receveur_id : r.demandeur_id;
+          amisExistantsCache[other] = r.statut;
+        });
+      } catch(e) {}
+    }
+
+    async function getStatsCourses(userId) {
+      try {
+        var res = await supabaseClient.from('courses').select('dist').eq('user_id', userId);
+        if (res.error || !res.data) return { count: 0, km: 0 };
+        var km = res.data.reduce(function(s,c){ return s+(parseFloat(c.dist)||0); }, 0);
+        return { count: res.data.length, km: Math.round(km) };
+      } catch(e) { return { count: 0, km: 0 }; }
+    }
+
+    function creerCarteAmi(profile, stats) {
+      var initiale = (profile.username||'?').charAt(0).toUpperCase();
+      const t = translations[currentLang];
+      var cat = calculerCategorie(profile.date_naissance) || '—';
+      var wrap = document.createElement('div');
+      wrap.className = 'friend-card';
+      wrap.id = 'ami-' + profile.id;
+      wrap.innerHTML =
+        '<div class="friend-avatar">' + initiale + '</div>' +
+        '<div class="friend-info"><div class="friend-name">' + escapeHtml(profile.username||'Athlète') + '</div><div class="friend-cat">' + cat + '</div></div>' +
+        '<div class="friend-stats">' +
+          '<div class="friend-stat"><span class="friend-stat-val">' + stats.count + '</span><span class="friend-stat-lbl">' + (t.lbl_courses || t.lbl_runs) + '</span></div>' +
+          '<div class="friend-stat"><span class="friend-stat-val">' + stats.km + '</span><span class="friend-stat-lbl">' + t.lbl_km + '</span></div>' +
+        '</div>' +
+        '<div class="friend-actions">' +
+          '<div class="confirm-remove" id="confirm-' + profile.id + '">' +
+            '<span class="confirm-remove-label">' + t.lbl_remove_confirm + '</span>' +
+            '<button class="btn-confirm-yes" onclick="supprimerAmi(\'' + profile.id + '\', event)">' + t.lbl_yes + '</button>' +
+            '<button class="btn-confirm-no" onclick="annulerSuppression(\'' + profile.id + '\', event)">' + t.lbl_no + '</button>' +
+          '</div>' +
+          '<button class="btn-more" onclick="demanderSuppression(\'' + profile.id + '\', event)">⋯</button>' +
+          '<span class="friend-arrow">→</span>' +
+        '</div>';
+      wrap.addEventListener('click', function(e) {
+        if (e.target.closest('.friend-actions button, .confirm-remove')) return;
+        if (window.supprimerNotifAmi) window.supprimerNotifAmi(profile.id);
+        window.location.href = 'athlete.html?id=' + profile.id + '&from=amis';
+      });
+      return wrap;
+    }
+
+    function demanderSuppression(id, e) {
+      e.stopPropagation();
+      document.querySelectorAll('.confirm-remove.visible').forEach(function(el){ if (el.id !== 'confirm-'+id) el.classList.remove('visible'); });
+      var c = document.getElementById('confirm-'+id);
+      if (c) c.classList.toggle('visible');
+    }
+    
+    function cancelSuppression(id, e) { e.stopPropagation(); var c = document.getElementById('confirm-'+id); if (c) c.classList.remove('visible'); }
+    function annulerSuppression(id, e) { cancelSuppression(id, e); }
+
+    async function supprimerAmi(id, e) {
+      e.stopPropagation();
+      var card = document.getElementById('ami-'+id);
+      if (!card) return;
+      card.querySelectorAll('button').forEach(function(b){ b.disabled=true; });
+      const t = translations[currentLang];
+      try {
+        var res = await supabaseClient.from('amis').delete()
+          .or('and(demandeur_id.eq.'+currentUserId+',receveur_id.eq.'+id+'),and(demandeur_id.eq.'+id+',receveur_id.eq.'+currentUserId+')');
+        if (res.error) throw res.error;
+        card.style.transition = 'opacity .3s,transform .3s,max-height .35s';
+        card.style.opacity='0'; card.style.transform='translateX(20px)';
+        card.style.overflow='hidden'; card.style.maxHeight=card.offsetHeight+'px';
+        setTimeout(function(){ card.style.maxHeight='0'; card.style.padding='0'; }, 280);
+        setTimeout(function(){
+          card.remove(); 
+          majBadgeAmis(-1); 
+          delete amisExistantsCache[id];
+          var list = document.querySelector('.friends-list');
+          if (!list || list.children.length === 0) {
+            document.getElementById('friends-container').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>';
+          }
+        }, 620);
+        showToast(t.toast_remove_success, '');
+      } catch(err) { card.querySelectorAll('button').forEach(function(b){ b.disabled=false; }); showToast(t.toast_remove_err,'error'); console.error(err); }
+    }
+
+    async function chargerAmis() {
+      var container = document.getElementById('friends-container');
+      var loading = document.getElementById('friends-loading');
+      const t = translations[currentLang];
+      try {
+        var res = await supabaseClient.from('amis').select('demandeur_id,receveur_id').eq('statut','accepte').or('demandeur_id.eq.'+currentUserId+',receveur_id.eq.'+currentUserId);
+        if (res.error) throw res.error;
+        var rows = res.data||[];
+        document.getElementById('badge-amis').textContent = rows.length;
+        loading.style.display='none'; container.style.display='block';
+        if (rows.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>'; return; }
+        var amiIds = rows.map(function(r){ return r.demandeur_id===currentUserId?r.receveur_id:r.demandeur_id; });
+        var profRes = await supabaseClient.from('profiles').select('id,username,date_naissance').in('id',amiIds);
+        if (profRes.error) throw profRes.error;
+        var profiles = profRes.data||[];
+        var statsArr = await Promise.all(profiles.map(function(p){ return getStatsCourses(p.id); }));
+        var list = document.createElement('div'); list.className='friends-list';
+        profiles.forEach(function(p,i){ list.appendChild(creerCarteAmi(p,statsArr[i])); });
+        container.innerHTML=''; container.appendChild(list);
+      } catch(e) { loading.style.display='none'; container.style.display='block'; container.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">' + t.err_load + '</div></div>'; console.error(e); }
+    }
+
+    async function chargerDemandes() {
+      var container = document.getElementById('demandes-container');
+      var loading = document.getElementById('demandes-loading');
+      const t = translations[currentLang];
+      try {
+        var res = await supabaseClient.from('amis').select('id,demandeur_id,created_at').eq('receveur_id',currentUserId).eq('statut','en_attente').order('created_at',{ascending:false});
+        if (res.error) throw res.error;
+        var demandes = res.data||[];
+        loading.style.display='none'; container.style.display='block';
+        var badge = document.getElementById('badge-demandes');
+        if (demandes.length>0) { badge.textContent=demandes.length>9?'9+':demandes.length; badge.style.display='inline'; } else { badge.style.display='none'; }
+        if (demandes.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">' + t.empty_req_title + '</div><div class="empty-sub">' + t.empty_req_sub + '</div></div>'; return; }
+        var ids = demandes.map(function(d){ return d.demandeur_id; });
+        var profRes = await supabaseClient.from('profiles').select('id,username,date_naissance').in('id',ids);
+        var profilesMap = {}; (profRes.data||[]).forEach(function(p){ profilesMap[p.id]=p; });
+        var list = document.createElement('div'); list.className='requests-list';
+        
+        demandes.forEach(function(d) {
+          var p=profilesMap[d.demandeur_id]||{};
+          var initiale=(p.username||'?').charAt(0).toUpperCase();
+          var cat=calculerCategorie(p.date_naissance)||'';
+          var date=d.created_at?new Date(d.created_at).toLocaleDateString(t.date_format, t.date_options):'';
+          var card=document.createElement('div'); card.className='request-card'; card.id='req-'+d.id;
+          
+          card.innerHTML='<div class="friend-avatar" style="width:44px;height:44px;font-size:1.1rem">'+initiale+'</div>' +
+            '<div class="request-info">' +
+              '<div class="request-name">'+escapeHtml(p.username||'Athlète')+'</div>' +
+              '<div class="request-meta">'+cat+(cat && date?' • ' : '')+date+'</div>' +
+            '</div>' +
+            '<div class="request-actions">' +
+              '<button class="btn-accept" onclick="traiterDemande(\''+d.id+'\', \''+d.demandeur_id+'\', \'accepte\')">'+t.btn_accept+'</button>' +
+              '<button class="btn-decline" onclick="traiterDemande(\''+d.id+'\', \''+d.demandeur_id+'\', \'refuse\')">'+t.btn_decline+'</button>' +
+            '</div>';
+          list.appendChild(card);
+        });
+        container.innerHTML=''; container.appendChild(list);
+      } catch(e) { loading.style.display='none'; container.style.display='block'; container.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">' + t.err_load + '</div></div>'; console.error(e); }
+    }
+
+    async function traiterDemande(relationId, demandeurId, action) {
+      var card = document.getElementById('req-' + relationId);
+      if (!card) return;
+      card.querySelectorAll('button').forEach(b => b.disabled = true);
+      const t = translations[currentLang];
+
+      try {
+        if (action === 'accepte') {
+          var res = await supabaseClient.from('amis').update({ statut: 'accepte' }).eq('id', relationId);
+          if (res.error) throw res.error;
+          amisExistantsCache[demandeurId] = 'accepte';
+        } else {
+          var res = await supabaseClient.from('amis').delete().eq('id', relationId);
+          if (res.error) throw res.error;
+          delete amisExistantsCache[demandeurId];
+        }
+
+        card.remove();
+        chargerAmis();
+        chargerDemandes();
+      } catch(err) {
+        card.querySelectorAll('button').forEach(b => b.disabled = false);
+        showToast(t.err_load, 'error');
+      }
+    }
+
+    function majBadgeAmis(n) {
+      var b = document.getElementById('badge-amis');
+      var val = (parseInt(b.textContent)||0) + n;
+      b.textContent = val < 0 ? 0 : val;
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Configuration de secours si la base de données met du temps à répondre
+      var fallbackLang = localStorage.getItem('runlog_lang');
+      if (!fallbackLang) {
+        var browserLang = navigator.language || navigator.userLanguage;
+        fallbackLang = browserLang.split('-')[0];
+      }
+      applyLanguage(fallbackLang);
+
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#search-wrap')) hideDropdown();
+      });
+
+      document.getElementById('search-clear').addEventListener('click', function() {
+        var input = document.getElementById('search-input');
+        input.value = ''; input.focus();
+        onSearchInput('');
+      });
+
+      if (supabaseClient) {
+        var authRes = await supabaseClient.auth.getUser();
+        if (authRes.data && authRes.data.user) {
+          currentUserId = authRes.data.user.id;
+
+          // Charger la vraie langue préférée de l'utilisateur depuis Supabase
+          try {
+            const { data: profile } = await supabaseClient
+              .from('profiles')
+              .select('langue')
+              .eq('id', currentUserId)
+              .maybeSingle();
+
+            if (profile && profile.langue) {
+              applyLanguage(profile.langue);
+            }
+          } catch (langErr) {
+            console.error("Impossible de récupérer la langue sur Supabase :", langErr);
+          }
+
+          await chargerRelationsExistantes();
+          await chargerAmis();
+          await chargerDemandes();
+        } else {
+          window.location.href = 'login.html';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
