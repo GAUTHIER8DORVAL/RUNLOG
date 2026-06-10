@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Profil Athlète — RunLog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0f; --surface: #141418; --border: #222228;
+      --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+
+    /* --- NAVIGATION --- */
+    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; flex: 1; }
+    .logo span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    nav::after { content: ''; flex: 1; display: block; }
+
+    .main-content { margin-top: 85px; }
+
+    /* --- HERO & ACCUEIL --- */
+    .back-link { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--font-head); font-size: .85rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 1.5rem 4rem; width: 100%; border-bottom: 1px solid var(--border); transition: color .2s; }
+    .back-link:hover { color: var(--accent); }
+
+    .athlete-hero { padding: 4rem 4rem; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: center; position: relative; overflow: hidden; }
+    .athlete-hero::after { content: attr(data-initials); position: absolute; right: -0.02em; bottom: -.1em; font-family: var(--font-head); font-weight: 900; font-size: clamp(10rem, 20vw, 20rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; z-index: 0; }
+
+    .avatar { width: 100px; height: 100px; background: var(--surface); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 2.5rem; color: var(--accent); flex-shrink: 0; position: relative; z-index: 1; }
+
+    .athlete-info { position: relative; z-index: 1; }
+    .athlete-tag { font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: .8rem; display: flex; align-items: center; gap: .5rem; }
+    .athlete-tag::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--accent); }
+    .athlete-name { font-family: var(--font-head); font-weight: 900; font-size: clamp(2.5rem, 5vw, 5rem); line-height: .95; text-transform: uppercase; margin-bottom: 1rem; }
+    
+    .meta-row-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .athlete-cat { display: inline-block; font-family: var(--font-head); font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; padding: .4rem 1rem; background: rgba(232,255,71,.1); color: var(--accent); border-radius: 2px; }
+
+    /* --- BOUTON INTERACTION AMIS --- */
+    .btn-ami { display: inline-flex; background: var(--accent); color: var(--bg); border: none; padding: .45rem 1.2rem; border-radius: 2px; font-family: var(--font-head); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; align-items: center; gap: 0.5rem; }
+    .btn-ami:hover { background: #fff; transform: translateY(-1px); }
+    .btn-ami.waiting { background: var(--surface); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; }
+    .btn-ami.friends { background: rgba(232, 255, 71, 0.05); color: var(--accent); border: 1px solid rgba(232, 255, 71, 0.2); cursor: default; }
+    .btn-ami:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* --- STATS RAPIDES --- */
+    .quick-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+    .quick-stat { background: var(--surface); padding: 1.8rem 2rem; display: flex; flex-direction: column; gap: .3rem; }
+    .quick-stat-val { font-family: var(--font-head); font-weight: 900; font-size: 2.5rem; line-height: 1; }
+    .quick-stat-val span { color: var(--accent); font-size: 1.2rem; margin-left: 0.1rem; }
+    .quick-stat-lbl { font-family: var(--font-head); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+
+    /* --- LISTE DES COURSES --- */
+    .section { padding: 4rem; }
+    .section-title { font-family: var(--font-head); font-weight: 900; font-size: clamp(1.8rem, 3vw, 2.8rem); text-transform: uppercase; margin-bottom: 2rem; }
+    .section-title span { color: var(--accent); }
+
+    .table-container { width: 100%; overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
+    table { border-collapse: collapse; width: 100%; min-width: 800px; text-align: left; }
+    thead th { font-family: var(--font-head); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding: 1.2rem 1rem; border-bottom: 1px solid var(--border); background: rgba(20,20,24,0.5); }
+    
+    .th-rank { width: 80px; text-align: center; }
+    .th-nom { min-width: 200px; }
+    .th-type { width: 100px; }
+    .th-date { width: 120px; }
+    .th-dist { width: 100px; text-align: right; }
+    .th-dplus { width: 100px; text-align: right; }
+    .th-temps { width: 110px; text-align: right; }
+    .th-part { width: 120px; text-align: right; }
+    .th-cat { width: 100px; text-align: center; }
+
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; cursor: pointer; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(232,255,71,0.02); }
+    td { padding: 1.1rem 1rem; vertical-align: middle; white-space: nowrap; }
+
+    /* Pilules de classement */
+    .rank-pill { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 1.1rem; min-width: 2.2rem; height: 2.2rem; padding: 0 .4rem; border-radius: 2px; background: rgba(255,255,255,0.03); color: var(--muted); }
+    .rank-pill.gold { background: rgba(255,215,0,0.15); color: #ffd700; }
+    .rank-pill.silver { background: rgba(192,192,192,0.15); color: #c0c0c0; }
+    .rank-pill.bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
+    .rank-pill.top10 { background: rgba(232,255,71,0.1); color: var(--accent); }
+
+    .race-name { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text); }
+    .race-location { font-size: .78rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
+    
+    .badge { font-family: var(--font-head); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; padding: .3rem .7rem; border-radius: 2px; display: inline-block; font-weight: 700; }
+    .badge-trail { background: rgba(232,255,71,0.1); color: var(--accent); }
+    .badge-route { background: rgba(255,107,53,0.1); color: var(--accent2); }
+    
+    .td-num { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; }
+    .td-num small { font-weight: 400; font-size: .75rem; color: var(--muted); margin-left: 0.1rem; }
+    .td-muted { color: var(--muted); font-size: .9rem; }
+    .td-r { text-align: right; }
+    .td-c { text-align: center; }
+    .dplus { color: var(--accent2); }
+
+    /* --- ETATS INTROUVABLES / ERREURS --- */
+    .not-found { text-align: center; padding: 8rem 2rem; }
+    .not-found h2 { font-family: var(--font-head); font-weight: 900; font-size: 3rem; text-transform: uppercase; margin-bottom: 1rem; }
+    .not-found p { color: var(--muted); font-size: 1.1rem; }
+
+    /* --- FOOTER --- */
+    footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .85rem; background: #09090b; }
+    .footer-logo { font-family: var(--font-head); font-weight: 900; font-size: 1.1rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
+    .footer-logo span { color: var(--accent); }
+
+    /* --- RESPONSIVE DESIGN --- */
+    @media(max-width:900px) {
+      nav { padding: 1rem 1.5rem; } 
+      nav ul { gap: 1.5rem; } 
+      nav::after { display: none; } 
+      .logo { flex: initial; }
+      .main-content { margin-top: 65px; }
+      .athlete-hero { padding: 3rem 1.5rem; grid-template-columns: 1fr; gap: 1.5rem; text-align: center; justify-items: center; }
+      .athlete-hero::after { display: none; }
+      .athlete-tag { justify-content: center; }
+      .athlete-tag::before { display: none; }
+      .meta-row-actions { justify-content: center; }
+      .quick-stats { grid-template-columns: repeat(2, 1fr); }
+      .section { padding: 2.5rem 1.5rem; }
+      .back-link { padding: 1rem 1.5rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <ul>
+      <li><a href="index.html" id="nav-home">Accueil</a></li>
+      <li><a href="courses.html" id="nav-runs">Courses</a></li>
+      <li><a href="stats.html" id="nav-stats">Stats</a></li>
+      <li><a href="profile.html" id="nav-profile">Profil</a></li>
+    </ul>
+  </nav>
+
+  <div class="main-content">
+    <a id="back-link" href="index.html" class="back-link">← Retour</a>
+
+    <div id="athlete-content">
+      <div id="lbl-loading-main" style="text-align:center; padding:8rem 2rem; color:var(--muted); font-family:var(--font-head); text-transform:uppercase; letter-spacing:.1em">Chargement…</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Run<span>Log</span></div>
+    <div id="footer-credit">Fait avec ❤️ et beaucoup de dénivelé</div>
+  </footer>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentConnectedUserId = null;
+    let relationActuelle = null;
+    let currentLang = 'fr';
+
+    const traductions = {
+      fr: {
+        nav_home: "Accueil", nav_runs: "Courses", nav_stats: "Stats", nav_profile: "Profil",
+        back_generic: "← Retour", back_home: "← Accueil", back_friends: "← Retour à mes amis",
+        loading: "Chargement…",
+        athlete_tag: "Profil athlète",
+        btn_add_friend: "👤 Ajouter en ami", btn_waiting: "✉️ Demande envoyée", btn_accept_invitation: "⚡ Accepter l'invitation", btn_friends: "✅ Amis",
+        stat_courses: "Courses", stat_distance: "Distance totale", stat_dplus: "Dénivelé cumulé", stat_podiums: "Podiums cat.",
+        title_all_races: "Toutes ses <span>courses</span>",
+        no_race: "Cet athlète n'a pas encore enregistré de course.",
+        th_rank: "Clt.", th_race: "Course", th_type: "Type", th_date: "Date", th_dist: "Distance", th_dplus: "D+", th_time: "Temps", th_part: "Participants", th_cat_clt: "Clt. Cat.",
+        not_found_title: "Athlète <span>introuvable</span>", not_found_sub_id: "Aucun identifiant fourni.", not_found_sub_profile: "Ce profil n'existe pas.",
+        footer_credit: "Fait avec ❤️ et beaucoup de dénivelé",
+        cat_minime: "Minime / Benjamin", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Espoir (ES)",
+        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
+      },
+      en: {
+        nav_home: "Home", nav_runs: "Runs", nav_stats: "Stats", nav_profile: "Profile",
+        back_generic: "← Back", back_home: "← Home", back_friends: "← Back to my friends",
+        loading: "Loading…",
+        athlete_tag: "Athlete profile",
+        btn_add_friend: "👤 Add Friend", btn_waiting: "✉️ Request sent", btn_accept_invitation: "⚡ Accept invitation", btn_friends: "✅ Friends",
+        stat_courses: "Runs", stat_distance: "Total distance", stat_dplus: "Total elevation", stat_podiums: "Cat. Podiums",
+        title_all_races: "All their <span>runs</span>",
+        no_race: "This athlete has not recorded any runs yet.",
+        th_rank: "Rank", th_race: "Run", th_type: "Type", th_date: "Date", th_dist: "Distance", th_dplus: "D+", th_time: "Time", th_part: "Participants", th_cat_clt: "Cat. Rank",
+        not_found_title: "Athlete <span>not found</span>", not_found_sub_id: "No identifier provided.", not_found_sub_profile: "This profile does not exist.",
+        footer_credit: "Made with ❤️ and a lot of elevation",
+        cat_minime: "Youth", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Hopeful (ES)",
+        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
+      },
+      es: {
+        nav_home: "Inicio", nav_runs: "Carreras", nav_stats: "Estadísticas", nav_profile: "Perfil",
+        back_generic: "← Volver", back_home: "← Inicio", back_friends: "← Volver a mis amigos",
+        loading: "Cargando…",
+        athlete_tag: "Perfil de atleta",
+        btn_add_friend: "👤 Añadir amigo", btn_waiting: "✉️ Solicitud enviada", btn_accept_invitation: "⚡ Aceptar invitación", btn_friends: "✅ Amigos",
+        stat_courses: "Carreras", stat_distance: "Distancia total", stat_dplus: "Desnivel acumulado", stat_podiums: "Podios cat.",
+        title_all_races: "Todas sus <span>carreras</span>",
+        no_race: "Este atleta aún no ha registrado ninguna carrera.",
+        th_rank: "Clas.", th_race: "Carrera", th_type: "Tipo", th_date: "Fecha", th_dist: "Distancia", th_dplus: "D+", th_time: "Tiempo", th_part: "Participantes", th_cat_clt: "Clas. Cat.",
+        not_found_title: "Atleta <span>no encontrado</span>", not_found_sub_id: "No se proporcionó ningún identificador.", not_found_sub_profile: "Este perfil no existe.",
+        footer_credit: "Hecho con ❤️ y mucho desnivel",
+        cat_minime: "Mínimo", cat_cadet: "Cadete (CA)", cat_junior: "Junior (JU)", cat_espoir: "Promesa (ES)",
+        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
+      const t = traductions[currentLang];
+
+      if(document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
+      if(document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
+      if(document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
+      if(document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
+      if(document.getElementById('lbl-loading-main')) document.getElementById('lbl-loading-main').textContent = t.loading;
+      if(document.getElementById('footer-credit')) document.getElementById('footer-credit').textContent = t.footer_credit;
+
+      const params = new URLSearchParams(window.location.search);
+      const from = params.get('from');
+      const backLink = document.getElementById('back-link');
+      if (backLink) {
+        if (from === 'amis' || (document.referrer && document.referrer.indexOf('liste-amis') !== -1)) {
+          backLink.textContent = t.back_friends;
+        } else if (document.referrer && document.referrer !== window.location.href) {
+          backLink.textContent = t.back_generic;
+        } else {
+          backLink.textContent = t.back_home;
+        }
+      }
+    }
+
+    // Gestion intelligente du retour arrière automatique
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const from = params.get('from');
+      const backLink = document.getElementById('back-link');
+
+      if (from === 'amis' || (document.referrer && document.referrer.indexOf('liste-amis') !== -1)) {
+        backLink.href = 'liste-amis.html';
+      } else if (document.referrer && document.referrer !== window.location.href) {
+        backLink.href = '#';
+        backLink.addEventListener('click', function(e){ e.preventDefault(); history.back(); });
+      } else {
+        backLink.href = 'index.html';
+      }
+    })();
+
+    function rankClass(n) {
+      if (n === 1) return 'gold';
+      if (n === 2) return 'silver';
+      if (n === 3) return 'bronze';
+      if (n && n <= 10) return 'top10';
+      return '';
+    }
+
+    function calculerCategorie(dateNaissanceString) {
+      if (!dateNaissanceString) return traductions[currentLang].cat_no_date;
+      const anneeNaissance = parseInt(dateNaissanceString.split('-')[0]);
+      if (isNaN(anneeNaissance)) return traductions[currentLang].cat_no_date;
+      const age = new Date().getFullYear() - anneeNaissance;
+      const t = traductions[currentLang];
+      
+      if (age < 16) return t.cat_minime;
+      if (age <= 17) return t.cat_cadet;
+      if (age <= 19) return t.cat_junior;
+      if (age <= 22) return t.cat_espoir;
+      if (age <= 34) return t.cat_senior;
+      if (age <= 39) return t.cat_master + " 0 (M0)";
+      if (age <= 44) return t.cat_master + " 1 (M1)";
+      if (age <= 49) return t.cat_master + " 2 (M2)";
+      if (age <= 54) return t.cat_master + " 3 (M3)";
+      if (age <= 59) return t.cat_master + " 4 (M4)";
+      if (age <= 64) return t.cat_master + " 5 (M5)";
+      if (age <= 69) return t.cat_master + " 6 (M6)";
+      if (age <= 74) return t.cat_master + " 7 (M7)";
+      if (age <= 79) return t.cat_master + " 8 (M8)";
+      return t.cat_master + " 9+ (M9)";
+    }
+
+    async function loadAthlete() {
+      const params = new URLSearchParams(window.location.search);
+      const userId = params.get('id');
+      const content = document.getElementById('athlete-content');
+      let t = traductions[currentLang];
+
+      if (!userId) {
+        content.innerHTML = `<div class="not-found"><h2>${t.not_found_title}</h2><p>${t.not_found_sub_id}</p></div>`;
+        return;
+      }
+
+      // Connexion optionnelle de session
+      try {
+        const userRes = await supabaseClient.auth.getUser();
+        if (userRes.data?.user) {
+          currentConnectedUserId = userRes.data.user.id;
+          
+          try {
+            const { data: connectedProfile } = await supabaseClient
+              .from('profiles')
+              .select('langue')
+              .eq('id', currentConnectedUserId)
+              .maybeSingle();
+            if (connectedProfile && connectedProfile.langue) {
+              applyLanguage(connectedProfile.langue);
+            }
+          } catch(le) { console.error(le); }
+        }
+      } catch (e) { console.warn("Utilisateur non connecté"); }
+
+      // Refresh du set de traductions courant
+      const tUpdated = traductions[currentLang];
+
+      // Chargement profil de l'athlète ciblé
+      const profRes = await supabaseClient
+        .from('profiles')
+        .select('username, genre, date_naissance')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profRes.error || !profRes.data) {
+        content.innerHTML = `<div class="not-found"><h2>${tUpdated.not_found_title}</h2><p>${tUpdated.not_found_sub_profile}</p></div>`;
+        return;
+      }
+
+      // Chargement courses de l'athlète ciblé
+      const res = await supabaseClient
+        .from('courses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('annee', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      const courses = res.data || [];
+      const username = profRes.data.username || 'Athlète';
+      const initials = username.charAt(0).toUpperCase();
+      const categorie = calculerCategorie(profRes.data.date_naissance);
+      const genre = profRes.data.genre || '';
+
+      const totalKm = courses.reduce((s, c) => s + (parseFloat(c.dist) || 0), 0);
+      const totalDplus = courses.reduce((s, c) => s + (parseInt(c.dplus) || 0), 0);
+      const podiums = courses.filter(c => c.classement_cat && parseInt(c.classement_cat) <= 3).length;
+
+      document.title = `${username} — RunLog`;
+
+      let pageHtml = `
+        <div class="athlete-hero" data-initials="${initials}">
+          <div class="avatar">${initials}</div>
+          <div class="athlete-info">
+            <div class="athlete-tag">${tUpdated.athlete_tag}</div>
+            <div class="athlete-name">${username}</div>
+            <div class="meta-row-actions">
+              ${categorie !== '—' ? `<span class="athlete-cat">${categorie}</span>` : ''}
+              ${genre ? `<span class="athlete-cat" style="background: rgba(255,255,255,0.05); color: #fff;">${genre}</span>` : ''}
+              ${currentConnectedUserId && currentConnectedUserId !== userId ? `<button id="btn-action-ami" class="btn-ami" onclick="gererActionAmi('${userId}')">${tUpdated.btn_add_friend}</button>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-stats">
+          <div class="quick-stat"><div class="quick-stat-val">${courses.length}</div><div class="quick-stat-lbl">${tUpdated.stat_courses}</div></div>
+          <div class="quick-stat"><div class="quick-stat-val">${Math.round(totalKm)}<span>km</span></div><div class="quick-stat-lbl">${tUpdated.stat_distance}</div></div>
+          <div class="quick-stat"><div class="quick-stat-val">${(totalDplus/1000).toFixed(1)}<span>k+</span></div><div class="quick-stat-lbl">${tUpdated.stat_dplus}</div></div>
+          <div class="quick-stat"><div class="quick-stat-val">${podiums}</div><div class="quick-stat-lbl">${tUpdated.stat_podiums}</div></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">${tUpdated.title_all_races}</div>`;
+
+      if (courses.length === 0) {
+        pageHtml += `<div style="color:var(--muted); padding:4rem 2rem; text-align:center; font-family:var(--font-head); text-transform:uppercase; letter-spacing:.05em">${tUpdated.no_race}</div></div>`;
+      } else {
+        pageHtml += `
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th class="th-rank">${tUpdated.th_rank}</th>
+                  <th class="th-nom">${tUpdated.th_race}</th>
+                  <th class="th-type">${tUpdated.th_type}</th>
+                  <th class="th-date">${tUpdated.th_date}</th>
+                  <th class="th-dist">${tUpdated.th_dist}</th>
+                  <th class="th-dplus">${tUpdated.th_dplus}</th>
+                  <th class="th-temps">${tUpdated.th_time}</th>
+                  <th class="th-part">${tUpdated.th_part}</th>
+                  <th class="th-cat">${tUpdated.th_cat_clt}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${courses.map(c => {
+                  const localDate = c.date || c.annee;
+                  const formattedPart = c.participants ? c.participants.toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US') : '—';
+                  return `
+                    <tr onclick="if(!event.target.closest('a,button')) window.location='fiche-course.html?id=${c.id}&from=athlete&uid=${userId}'">
+                      <td class="td-c"><div class="rank-pill ${rankClass(c.classement)}">${c.classement || '—'}</div></td>
+                      <td><div class="race-name">${c.nom}</div><div class="race-location">${c.lieu || ''}</div></td>
+                      <td><span class="badge badge-${String(c.type).toLowerCase() === 'trail' ? 'trail' : 'route'}">${c.type || 'Route'}</span></td>
+                      <td class="td-muted">${localDate}</td>
+                      <td class="td-num td-r">${c.dist || '0'}<small>km</small></td>
+                      <td class="td-num td-r ${c.dplus ? 'dplus' : 'td-muted'}">${c.dplus ? c.dplus + '<small>m</small>' : '—'}</td>
+                      <td class="td-num td-r">${c.temps || '—'}</td>
+                      <td class="td-num td-r td-muted">${formattedPart}</td>
+                      <td class="td-c"><div class="rank-pill ${rankClass(c.classement_cat)}">${c.classement_cat || '—'}<small style="font-size:.58rem; font-weight:300; margin-left:.15rem">${c.cat || ''}</small></div></td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }
+
+      content.innerHTML = pageHtml;
+
+      if (currentConnectedUserId && currentConnectedUserId !== userId) {
+        verifierStatutAmitie(userId);
+      }
+    }
+
+    async function verifierStatutAmitie(targetProfileUserId) {
+      const btn = document.getElementById('btn-action-ami');
+      if (!btn) return;
+      const t = traductions[currentLang];
+
+      try {
+        const { data: amities, error } = await supabaseClient
+          .from('amis')
+          .select('*')
+          .or(`and(demandeur_id.eq.${currentConnectedUserId},receveur_id.eq.${targetProfileUserId}),and(demandeur_id.eq.${targetProfileUserId},receveur_id.eq.${currentConnectedUserId})`)
+          .maybeSingle();
+
+        if (error) { console.warn("Vérification amitié :", error.message); return; }
+
+        if (!amities) {
+          relationActuelle = null;
+          btn.innerHTML = t.btn_add_friend;
+          btn.className = "btn-ami";
+        } else if (amities.statut === 'accepte') {
+          relationActuelle = 'accepte';
+          btn.innerHTML = t.btn_friends;
+          btn.className = "btn-ami friends";
+        } else if (amities.statut === 'en_attente') {
+          if (amities.demandeur_id === currentConnectedUserId) {
+            relationActuelle = 'attente_demandeur';
+            btn.innerHTML = t.btn_waiting;
+            btn.className = "btn-ami waiting";
+          } else {
+            relationActuelle = 'attente_receveur';
+            btn.innerHTML = t.btn_accept_invitation;
+            btn.className = "btn-ami";
+          }
+        }
+      } catch (e) { console.error("Erreur vérification amitié :", e); }
+    }
+
+    async function gererActionAmi(targetProfileUserId) {
+      const btn = document.getElementById('btn-action-ami');
+      if (!btn || !currentConnectedUserId) return;
+      if (relationActuelle === 'attente_demandeur' || relationActuelle === 'accepte') return;
+      const t = traductions[currentLang];
+
+      try {
+        btn.disabled = true;
+
+        if (!relationActuelle) {
+          const { error } = await supabaseClient.from('amis').insert({
+            demandeur_id: currentConnectedUserId,
+            receveur_id: targetProfileUserId,
+            statut: 'en_attente'
+          });
+          if (!error) {
+            relationActuelle = 'attente_demandeur';
+            btn.innerHTML = t.btn_waiting;
+            btn.className = "btn-ami waiting";
+          } else { console.error("Erreur insertion amitié :", error.message); }
+
+        } else if (relationActuelle === 'attente_receveur') {
+          const { error } = await supabaseClient.from('amis')
+            .update({ statut: 'accepte' })
+            .eq('demandeur_id', targetProfileUserId)
+            .eq('receveur_id', currentConnectedUserId);
+          if (!error) {
+            relationActuelle = 'accepte';
+            btn.innerHTML = t.btn_friends;
+            btn.className = "btn-ami friends";
+          } else { console.error("Erreur acceptation amitié :", error.message); }
+        }
+      } catch (e) { console.error("Erreur action bouton ami :", e); }
+      finally { btn.disabled = false; }
+    }
+
+    // Gestion de la langue par défaut au boot local
+    const fallbackLang = localStorage.getItem('runlog_lang') || (navigator.language || navigator.userLanguage).split('-')[0];
+    applyLanguage(fallbackLang);
+
+    // Initialisation
+    loadAthlete();
+  </script>
+</body>
+</html>

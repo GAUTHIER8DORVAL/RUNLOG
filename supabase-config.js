@@ -1,0 +1,3 @@
+// Configuration de ton projet Supabase
+const SUPABASE_URL = "https://ynchygtdhccdontqtofx.supabase.co"; 
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluY2h5Z3RkaGNjZG9udHF0b2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTA1NTIsImV4cCI6MjA5NjMyNjU1Mn0.c7IkcBZ97jCqLZTJ6XFaNCwfzs5BaN-9EcNxRJI7C3Q";

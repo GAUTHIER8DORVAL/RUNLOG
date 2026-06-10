@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion / Inscription — RunLog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0f; --surface: #141418; --border: #222228;
+      --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
+      --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    .login-box {
+      width: 100%; max-width: 420px; padding: 3rem; background: var(--surface);
+      border: 1px solid var(--border); border-top: 3px solid var(--accent); margin: 1rem;
+    }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.8rem; letter-spacing: .08em; text-transform: uppercase; text-align: center; margin-bottom: 2rem; color: var(--text); text-decoration: none; display: block; }
+    .logo span { color: var(--accent); }
+    
+    h1 { font-family: var(--font-head); font-weight: 900; font-size: 2rem; text-transform: uppercase; margin-bottom: .3rem; text-align: center; }
+    h1 span { color: var(--accent); }
+    .subtitle { font-size: .85rem; color: var(--muted); text-align: center; margin-bottom: 2rem; line-height: 1.6; }
+
+    .field { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.2rem; position: relative; }
+    .field label { font-family: var(--font-head); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+    input { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; color: var(--text); font-family: var(--font-body); font-size: 1rem; padding: .8rem 1rem; transition: border-color .2s; width: 100%; }
+    input:focus { outline: none; border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+
+    /* LIEN MOT DE PASSE OUBLIÉ */
+    .forgot-link {
+      align-self: flex-end; font-family: var(--font-head); font-size: .75rem;
+      letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+      text-decoration: none; margin-top: .4rem; transition: color .2s; cursor: pointer;
+    }
+    .forgot-link:hover { color: var(--accent); }
+
+    .btn-login { width: 100%; margin-top: .5rem; font-family: var(--font-head); font-weight: 700; font-size: 1rem; letter-spacing: .15em; text-transform: uppercase; padding: 1rem; border-radius: 2px; cursor: pointer; border: 2px solid var(--accent); background: var(--accent); color: #0d0d0f; transition: all .2s; }
+    .btn-login:hover { background: transparent; color: var(--accent); }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .btn-secondary { width: 100%; margin-top: .8rem; font-family: var(--font-head); font-weight: 500; font-size: 0.9rem; letter-spacing: .1em; text-transform: uppercase; padding: .8rem; border-radius: 2px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .2s; }
+    .btn-secondary:hover { border-color: var(--text); color: var(--text); }
+
+    .error-msg, .success-msg { font-family: var(--font-head); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; padding: .7rem 1rem; margin-top: 1rem; text-align: center; display: none; white-space: pre-line; }
+    .error-msg { background: rgba(255,100,100,.1); color: #ff6464; }
+    .success-msg { background: rgba(100,255,100,.1); color: #64ff64; }
+
+    .back-link { margin-top: 1.5rem; font-family: var(--font-head); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .back-link:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+    <div class="login-box">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+      <h1 id="form-title">Espace <span>Athlète</span></h1>
+      <p class="subtitle" id="form-sub">Connecte-toi ou crée un compte pour publier sur le réseau social.</p>
+
+      <div class="field" id="pseudo-field" style="display: none;">
+        <label id="lbl-username">Nom d'athlète (Pseudo) *</label>
+        <input type="text" id="username" placeholder="Ex: Gauthier_Runner" />
+      </div>
+
+      <div class="field">
+        <label id="lbl-email">Email *</label>
+        <input type="email" id="email" placeholder="ton@email.com" />
+      </div>
+
+      <div class="field" id="password-field">
+        <label id="lbl-password">Mot de passe *</label>
+        <input type="password" id="password" placeholder="••••••••" />
+        <span class="forgot-link" id="forgot-link" onclick="resetPassword()">Mot de passe oublié ?</span>
+      </div>
+
+      <button class="btn-login" id="btn-submit" onclick="handleSubmit()">Se connecter →</button>
+      <button class="btn-secondary" id="btn-switch" onclick="toggleForm()">Pas de compte ? S'inscrire ici</button>
+      
+      <div class="error-msg" id="error-msg"></div>
+      <div class="success-msg" id="success-msg"></div>
+    </div>
+    <a href="index.html" class="back-link" id="back-link">← Retour au fil d'actualité</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    let currentMode = 'login';
+    let db = null;
+    let currentLang = 'fr';
+
+    // DICTIONNAIRE DE TRADUCTION MULTILINGUE
+    const translations = {
+      fr: {
+        title_login: "Espace <span>Athlète</span>",
+        sub_login: "Connecte-toi ou crée un compte pour publier sur le réseau social.",
+        title_signup: "Créer un <span>compte</span>",
+        sub_signup: "Rejoins la communauté et commence à suivre tes performances.",
+        lbl_username: "Nom d'athlète (Pseudo) *",
+        ph_username: "Ex: Gauthier_Runner",
+        lbl_email: "Email *",
+        lbl_password: "Mot de passe *",
+        forgot_link: "Mot de passe oublié ?",
+        btn_login: "Se connecter →",
+        btn_login_loading: "Connexion en cours…",
+        btn_switch_to_signup: "Pas de compte ? S'inscrire ici",
+        btn_signup: "S'inscrire 🏁",
+        btn_signup_loading: "Inscription en cours…",
+        btn_switch_to_login: "Déjà inscrit ? Se connecter",
+        back_link: "← Retour au fil d'actualité",
+        err_db: "Erreur : Le client de la base de données n'a pas pu se charger.",
+        err_fields: "Veuillez remplir tous les champs obligatoires.",
+        err_credentials: "Identifiants incorrects ou e-mail non confirmé.",
+        err_reset_email: "Indique d'abord ton adresse e-mail dans le champ ci-dessus.",
+        err_generic: "Une erreur est survenue.",
+        succ_reset: "Lien de réinitialisation envoyé !\nVérifie ta boîte de réception.",
+        succ_signup: "Inscription réussie ! Redirection..."
+      },
+      en: {
+        title_login: "Athlete <span>Space</span>",
+        sub_login: "Log in or create an account to post on the social network.",
+        title_signup: "Create an <span>account</span>",
+        sub_signup: "Join the community and start tracking your performances.",
+        lbl_username: "Athlete Name (Username) *",
+        ph_username: "e.g., John_Runner",
+        lbl_email: "Email *",
+        lbl_password: "Password *",
+        forgot_link: "Forgot password?",
+        btn_login: "Log In →",
+        btn_login_loading: "Logging in...",
+        btn_switch_to_signup: "No account? Sign up here",
+        btn_signup: "Sign Up 🏁",
+        btn_signup_loading: "Signing up...",
+        btn_switch_to_login: "Already registered? Log in",
+        back_link: "← Back to feed",
+        err_db: "Error: Database client failed to load.",
+        err_fields: "Please fill in all required fields.",
+        err_credentials: "Invalid credentials or unconfirmed email.",
+        err_reset_email: "Please enter your email address in the field above first.",
+        err_generic: "An error occurred.",
+        succ_reset: "Reset link sent!\nCheck your inbox.",
+        succ_signup: "Sign up successful! Redirecting..."
+      },
+      es: {
+        title_login: "Espacio <span>Atleta</span>",
+        sub_login: "Inicia sesión o crea una cuenta para publicar en la red social.",
+        title_signup: "Crear una <span>cuenta</span>",
+        sub_signup: "Únete a la comunidad y empieza a registrar tus entrenamientos.",
+        lbl_username: "Nombre de atleta (Apodo) *",
+        ph_username: "Ej: Juan_Runner",
+        lbl_email: "Correo electrónico *",
+        lbl_password: "Contraseña *",
+        forgot_link: "¿Has olvidado tu contraseña?",
+        btn_login: "Iniciar sesión →",
+        btn_login_loading: "Iniciando sesión…",
+        btn_switch_to_signup: "¿No tienes cuenta? Regístrate aquí",
+        btn_signup: "Registrarse 🏁",
+        btn_signup_loading: "Registrando…",
+        btn_switch_to_login: "¿Ya tienes cuenta? Inicia sesión",
+        back_link: "← Volver a la sección de noticias",
+        err_db: "Error: No se pudo cargar el cliente de la base de datos.",
+        err_fields: "Por favor, rellena todos los campos obligatorios.",
+        err_credentials: "Credenciales incorrectas o correo electrónico no confirmado.",
+        err_reset_email: "Introduce primero tu dirección de correo electrónico en el campo de arriba.",
+        err_generic: "Ha ocurrido un error.",
+        succ_reset: "¡Enlace de restablecimiento enviado!\nComprueba tu bandeja de entrada.",
+        succ_signup: "¡Registro completado con éxito! Redirigiendo..."
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
+      const t = translations[currentLang];
+
+      document.getElementById('lbl-username').textContent = t.lbl_username;
+      document.getElementById('username').placeholder = t.ph_username;
+      document.getElementById('lbl-email').textContent = t.lbl_email;
+      document.getElementById('lbl-password').textContent = t.lbl_password;
+      document.getElementById('forgot-link').textContent = t.forgot_link;
+      document.getElementById('back-link').textContent = t.back_link;
+
+      const title = document.getElementById('form-title');
+      const sub = document.getElementById('form-sub');
+      const btnSubmit = document.getElementById('btn-submit');
+      const btnSwitch = document.getElementById('btn-switch');
+
+      if (currentMode === 'login') {
+        title.innerHTML = t.title_login;
+        sub.textContent = t.sub_login;
+        btnSubmit.textContent = t.btn_login;
+        btnSwitch.textContent = t.btn_switch_to_signup;
+      } else {
+        title.innerHTML = t.title_signup;
+        sub.textContent = t.sub_signup;
+        btnSubmit.textContent = t.btn_signup;
+        btnSwitch.textContent = t.btn_switch_to_login;
+      }
+    }
+
+    // Détection de la langue par défaut (Navigateur)
+    function detectBrowserLanguage() {
+      const browserLang = navigator.language || navigator.userLanguage;
+      const shortLang = browserLang.split('-')[0];
+      applyLanguage(shortLang);
+    }
+
+    // Initialisation sécurisée
+    try {
+      if (typeof window.supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined') {
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.error("Erreur d'initialisation Supabase:", e);
+    }
+
+    // Redirection automatique et chargement de la langue du profil
+    if (db && db.auth) {
+      db.auth.getUser().then(async ({ data: { user } }) => {
+        if (user) {
+          // Si déjà connecté, on récupère sa langue pour harmoniser puis on redirige
+          try {
+            const { data: profile } = await db.from('profiles').select('langue').eq('id', user.id).maybeSingle();
+            if (profile && profile.langue) localStorage.setItem('runlog_lang', profile.langue);
+          } catch(e) {}
+          window.location.href = 'index.html';
+        }
+      });
+    }
+
+    // Lancement de la traduction au chargement initial
+    detectBrowserLanguage();
+
+    function toggleForm() {
+      const pseudoField = document.getElementById('pseudo-field');
+      const forgotLink = document.getElementById('forgot-link');
+
+      document.getElementById('error-msg').style.display = 'none';
+      document.getElementById('success-msg').style.display = 'none';
+
+      if (currentMode === 'login') {
+        currentMode = 'signup';
+        pseudoField.style.display = 'flex';
+        forgotLink.style.display = 'none';
+      } else {
+        currentMode = 'login';
+        pseudoField.style.display = 'none';
+        forgotLink.style.display = 'block';
+      }
+      applyLanguage(currentLang);
+    }
+
+    // GESTION DE LA RÉINITIALISATION DU MOT DE PASSE
+    async function resetPassword() {
+      const email = document.getElementById('email').value.trim();
+      const err = document.getElementById('error-msg');
+      const succ = document.getElementById('success-msg');
+      const t = translations[currentLang];
+
+      err.style.display = 'none';
+      succ.style.display = 'none';
+
+      if (!email) {
+        err.style.display = 'block';
+        err.textContent = t.err_reset_email;
+        return;
+      }
+
+      try {
+        const { error } = await db.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset-password.html',
+        });
+
+        if (error) {
+          err.style.display = 'block';
+          err.textContent = error.message;
+        } else {
+          succ.style.display = 'block';
+          succ.textContent = t.succ_reset;
+        }
+      } catch (e) {
+        err.style.display = 'block';
+        err.textContent = t.err_generic;
+      }
+    }
+
+    async function handleSubmit() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const username = document.getElementById('username').value.trim();
+      const btn = document.getElementById('btn-submit');
+      const err = document.getElementById('error-msg');
+      const succ = document.getElementById('success-msg');
+      const t = translations[currentLang];
+
+      err.style.display = 'none';
+      succ.style.display = 'none';
+
+      if (!db || !db.auth) {
+        err.style.display = 'block';
+        err.textContent = t.err_db;
+        return;
+      }
+
+      if (!email || !password || (currentMode === 'signup' && !username)) {
+        err.style.display = 'block';
+        err.textContent = t.err_fields;
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = currentMode === 'signup' ? t.btn_signup_loading : t.btn_login_loading;
+
+      if (currentMode === 'signup') {
+        const { data, error } = await db.auth.signUp({
+          email: email,
+          password: password,
+          options: { data: { display_name: username } }
+        });
+        
+        if (error) {
+          err.style.display = 'block';
+          err.textContent = error.message;
+          btn.disabled = false;
+          btn.textContent = t.btn_signup;
+        } else {
+          // Création automatique de la ligne profil avec la langue détectée
+          if (data?.user) {
+            await db.from('profiles').upsert({
+              id: data.user.id,
+              username: username,
+              langue: currentLang,
+              updated_at: new Date().toISOString()
+            });
+          }
+          succ.style.display = 'block';
+          succ.textContent = t.succ_signup;
+          setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+        }
+      } else {
+        const { data, error } = await db.auth.signInWithPassword({ 
+          email: email, 
+          password: password 
+        });
+        
+        if (error) {
+          err.style.display = 'block';
+          err.textContent = t.err_credentials;
+          btn.disabled = false;
+          btn.textContent = t.btn_login;
+        } else {
+          // Récupération de la langue préférée de l'utilisateur après une connexion réussie
+          if (data?.user) {
+            const { data: profile } = await db.from('profiles').select('langue').eq('id', data.user.id).maybeSingle();
+            if (profile && profile.langue) {
+              localStorage.setItem('runlog_lang', profile.langue);
+            }
+          }
+          window.location.href = 'index.html';
+        }
+      }
+    }
+  </script>
+</body>
+</html>
