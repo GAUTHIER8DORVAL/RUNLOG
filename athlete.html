@@ -18,13 +18,53 @@
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
 
     /* --- NAVIGATION --- */
-    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
-    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; flex: 1; }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100;
+    }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
     nav a:hover, nav a.active { color: var(--accent); }
-    nav::after { content: ''; flex: 1; display: block; }
+    .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
+
+    /* --- RECHERCHE --- */
+    .nav-search-container { position: relative; width: 180px; }
+    .search-input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; color: var(--text); font-family: var(--font-body);
+      font-size: 0.85rem; padding: 0.4rem 1rem 0.4rem 2.2rem; transition: all .2s;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); background: #1a1a22; width: 220px; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; }
+
+    .search-results {
+      position: absolute; top: calc(100% + 10px); left: 0; width: 260px;
+      display: flex; flex-direction: column; gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+      border-radius: 6px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 110;
+    }
+    .search-result-row {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.7rem 1rem; background: var(--surface);
+      border-left: 3px solid transparent;
+      text-decoration: none; color: var(--text);
+      transition: border-color .2s, background .2s;
+    }
+    .search-result-row:hover { background: #18181e; border-left-color: var(--accent); }
+    .athlete-avatar-sm { width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 0.9rem; color: var(--accent); flex-shrink: 0; }
+    .search-athlete-pseudo { font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: .05em; }
+    .search-athlete-meta { font-size: .7rem; color: var(--muted); }
+    .search-athlete-arrow { margin-left: auto; display: flex; align-items: center; }
+    .search-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+
+    /* --- BARRE DE NAVIGATION MOBILE (BAS) --- */
+    .app-bottom-nav { display: none; }
 
     .main-content { margin-top: 85px; }
 
@@ -120,20 +160,92 @@
 
     /* --- RESPONSIVE DESIGN --- */
     @media(max-width:900px) {
-      nav { padding: 1rem 1.5rem; }
-      nav ul { gap: 1.5rem; }
-      nav::after { display: none; }
-      .logo { flex: initial; }
+      /* Barre du haut : logo + recherche, pas de menu texte */
+      nav {
+        padding: 0.8rem 1.2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-left-group { width: 100%; justify-content: space-between; gap: 1rem; }
+      nav ul { display: none !important; }
+      .nav-actions-empty { display: none; }
+      .nav-search-container { width: 140px; }
+      .search-input:focus { width: 160px; }
+      .search-results { right: 0; left: auto; width: 240px; }
+
       .main-content { margin-top: 65px; }
-      .athlete-hero { padding: 3rem 1.5rem; grid-template-columns: 1fr; gap: 1.5rem; text-align: center; justify-items: center; }
+
+      .back-link { padding: 1rem 1.2rem; }
+
+      .athlete-hero {
+        padding: 2rem 1.2rem;
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        text-align: center;
+        justify-items: center;
+      }
       .athlete-hero::after { display: none; }
       .athlete-tag { justify-content: center; }
       .athlete-tag::before { display: none; }
       .meta-row-actions { justify-content: center; }
+
       .quick-stats { grid-template-columns: repeat(2, 1fr); }
-      .section { padding: 2.5rem 1.5rem; }
-      .back-link { padding: 1rem 1.5rem; }
-      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+      .quick-stat { padding: 1.2rem 1rem; }
+
+      .section { padding: 2rem 1.2rem 6rem 1.2rem; } /* padding-bottom pour la barre du bas */
+
+      footer {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 2rem 1.2rem 7rem 1.2rem;
+      }
+
+      /* Affichage de la barre de navigation du bas (style app mobile) */
+      .app-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 68px;
+        background: rgba(20, 20, 24, 0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .app-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--muted);
+        text-decoration: none;
+        font-family: var(--font-head);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        flex: 1;
+        height: 100%;
+        transition: color 0.2s;
+      }
+      .app-bottom-nav-item svg {
+        stroke: var(--muted);
+        transition: stroke 0.2s;
+      }
+      .app-bottom-nav-item.active {
+        color: var(--accent);
+      }
+      .app-bottom-nav-item.active svg {
+        stroke: var(--accent);
+      }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -142,13 +254,30 @@
 <body>
 
   <nav>
-    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+
+      <!-- Barre de recherche (visible desktop + mobile) -->
+      <div class="nav-search-container">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="search-input" placeholder="Rechercher…" oninput="searchAthletes(this.value)" autocomplete="off" />
+        <div class="search-results" id="search-results" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Menu texte desktop uniquement -->
     <ul>
       <li><a href="index.html" id="nav-home">Accueil</a></li>
       <li><a href="courses.html" id="nav-runs">Courses</a></li>
       <li><a href="stats.html" id="nav-stats">Stats</a></li>
       <li><a href="profile.html" id="nav-profile">Profil</a></li>
     </ul>
+
+    <div class="nav-actions-empty"></div>
   </nav>
 
   <div class="main-content">
@@ -169,11 +298,34 @@
     </div>
   </footer>
 
+  <!-- Barre de navigation mobile (bas) — identique à index.html -->
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item" id="bnav-home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span id="bnav-home-lbl">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item" id="bnav-runs">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span id="bnav-runs-lbl">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item" id="bnav-stats">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span id="bnav-stats-lbl">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item" id="bnav-profile">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="bnav-profile-lbl">Profil</span>
+    </a>
+  </div>
+
   <script>
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentConnectedUserId = null;
     let relationActuelle = null;
     let currentLang = 'fr';
+    let searchTimeout = null;
+
+    const ARROW_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
     const traductions = {
       fr: {
@@ -191,6 +343,7 @@
         th_rank: "Clt.", th_race: "Course", th_type: "Type", th_date: "Date", th_dist: "Distance", th_dplus: "D+", th_time: "Temps", th_part: "Participants", th_cat_clt: "Clt. Cat.",
         not_found_title: "Athlète <span>introuvable</span>", not_found_sub_id: "Aucun identifiant fourni.", not_found_sub_profile: "Ce profil n'existe pas.",
         footer_credit: 'Fait avec <svg viewBox="0 0 24 24" fill="#ff6b35" style="width:16px;height:16px;vertical-align:-2px" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> et beaucoup de dénivelé',
+        search_placeholder: "Rechercher…", search_view: "Voir le carnet", search_no_result: "Aucun résultat",
         cat_minime: "Minime / Benjamin", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Espoir (ES)",
         cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
       },
@@ -209,6 +362,7 @@
         th_rank: "Rank", th_race: "Run", th_type: "Type", th_date: "Date", th_dist: "Distance", th_dplus: "D+", th_time: "Time", th_part: "Participants", th_cat_clt: "Cat. Rank",
         not_found_title: "Athlete <span>not found</span>", not_found_sub_id: "No identifier provided.", not_found_sub_profile: "This profile does not exist.",
         footer_credit: 'Made with <svg viewBox="0 0 24 24" fill="#ff6b35" style="width:16px;height:16px;vertical-align:-2px" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> and a lot of elevation',
+        search_placeholder: "Search…", search_view: "View logbook", search_no_result: "No results",
         cat_minime: "Youth", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Hopeful (ES)",
         cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
       },
@@ -227,6 +381,7 @@
         th_rank: "Clas.", th_race: "Carrera", th_type: "Tipo", th_date: "Fecha", th_dist: "Distancia", th_dplus: "D+", th_time: "Tiempo", th_part: "Participantes", th_cat_clt: "Clas. Cat.",
         not_found_title: "Atleta <span>no encontrado</span>", not_found_sub_id: "No se proporcionó ningún identificador.", not_found_sub_profile: "Este perfil no existe.",
         footer_credit: 'Hecho con <svg viewBox="0 0 24 24" fill="#ff6b35" style="width:16px;height:16px;vertical-align:-2px" aria-hidden="true"><path d="M12 21C12 21 3 14.5 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 13 5.09C14.09 3.81 15.76 3 17.5 3C20.58 3 23 5.42 23 8.5C23 14.5 12 21 12 21Z"/></svg> y mucho desnivel',
+        search_placeholder: "Buscar…", search_view: "Ver cuaderno", search_no_result: "Sin resultados",
         cat_minime: "Mínimo", cat_cadet: "Cadete (CA)", cat_junior: "Junior (JU)", cat_espoir: "Promesa (ES)",
         cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "—"
       }
@@ -242,6 +397,16 @@
       if (document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
       if (document.getElementById('lbl-loading-main')) document.getElementById('lbl-loading-main').textContent = t.loading;
       if (document.getElementById('footer-credit')) document.getElementById('footer-credit').innerHTML = t.footer_credit;
+
+      // Labels barre mobile
+      if (document.getElementById('bnav-home-lbl')) document.getElementById('bnav-home-lbl').textContent = t.nav_home;
+      if (document.getElementById('bnav-runs-lbl')) document.getElementById('bnav-runs-lbl').textContent = t.nav_runs;
+      if (document.getElementById('bnav-stats-lbl')) document.getElementById('bnav-stats-lbl').textContent = t.nav_stats;
+      if (document.getElementById('bnav-profile-lbl')) document.getElementById('bnav-profile-lbl').textContent = t.nav_profile;
+
+      // Placeholder recherche
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.placeholder = t.search_placeholder;
 
       const params = new URLSearchParams(window.location.search);
       const from = params.get('from');
@@ -272,6 +437,52 @@
         backLink.href = 'index.html';
       }
     })();
+
+    // Fermeture résultats recherche au clic extérieur
+    document.addEventListener('click', function(e) {
+      const container = document.querySelector('.nav-search-container');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
+    });
+
+    function searchAthletes(query) {
+      const resultsDiv = document.getElementById('search-results');
+      clearTimeout(searchTimeout);
+      if (!query || query.trim().length < 2) {
+        resultsDiv.style.display = 'none';
+        resultsDiv.innerHTML = '';
+        return;
+      }
+      searchTimeout = setTimeout(async function() {
+        const res = await supabaseClient
+          .from('profiles')
+          .select('id, username')
+          .ilike('username', '%' + query.trim() + '%');
+        if (res.error || !res.data) { resultsDiv.style.display = 'none'; return; }
+        const athletes = res.data || [];
+        const t = traductions[currentLang];
+        resultsDiv.style.display = 'flex';
+        if (!athletes.length) {
+          resultsDiv.innerHTML = '<div class="search-empty">' + t.search_no_result + '</div>';
+          return;
+        }
+        let html = '';
+        athletes.forEach(function(a) {
+          const pseudo = a.username || 'Athlète';
+          const initiale = pseudo.charAt(0).toUpperCase();
+          html += '<a href="athlete.html?id=' + a.id + '" class="search-result-row">'
+            + '<div class="athlete-avatar-sm">' + initiale + '</div>'
+            + '<div>'
+            + '<div class="search-athlete-pseudo">' + pseudo + '</div>'
+            + '<div class="search-athlete-meta">' + t.search_view + '</div>'
+            + '</div>'
+            + '<div class="search-athlete-arrow">' + ARROW_SVG + '</div>'
+            + '</a>';
+        });
+        resultsDiv.innerHTML = html;
+      }, 300);
+    }
 
     function rankClass(n) {
       if (n === 1) return 'gold';
@@ -515,7 +726,7 @@
       finally { btn.disabled = false; }
     }
 
-    // Gestion de la langue par défaut au boot local
+    // Langue par défaut au boot
     const fallbackLang = localStorage.getItem('runlog_lang') || (navigator.language || navigator.userLanguage).split('-')[0];
     applyLanguage(fallbackLang);
 
