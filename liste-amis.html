@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>RunLog — Mes Amis</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
@@ -14,6 +16,7 @@
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
 
+    /* NAVIGATION DESKTOP */
     nav {
       position: fixed; top: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: space-between;
@@ -23,102 +26,68 @@
     .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
     .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
     nav a:hover, nav a.active { color: var(--accent); }
     .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
 
-    .container { max-width: 800px; margin: 120px auto 4rem auto; padding: 0 2rem; }
+    /* BOTTOM NAV — masquée desktop */
+    .app-bottom-nav { display: none; }
 
+    /* CONTENU */
+    .container { max-width: 800px; margin: 120px auto 4rem auto; padding: 0 2rem; }
     .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
     .page-title-block { display: flex; flex-direction: column; gap: 0.3rem; }
     .page-title { font-family: var(--font-head); font-weight: 900; font-size: 3rem; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1; }
     .page-subtitle { font-size: 0.85rem; color: var(--muted); }
 
+    /* ONGLETS */
     .tabs { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2rem; }
-    .tab-btn {
-      flex: 1; background: var(--surface); border: none; padding: 0.9rem 1rem;
-      font-family: var(--font-head); font-weight: 700; font-size: 0.85rem;
-      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
-      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    }
+    .tab-btn { flex: 1; background: var(--surface); border: none; padding: 0.9rem 1rem; font-family: var(--font-head); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
     .tab-btn:hover { color: var(--text); background: #1a1a1f; }
     .tab-btn.active { background: var(--bg); color: var(--accent); }
-    .tab-btn svg { transition: stroke 0.2s; }
     .tab-badge { background: var(--accent); color: var(--bg); font-size: 0.7rem; font-weight: 900; padding: 0.1rem 0.4rem; border-radius: 2px; min-width: 18px; text-align: center; line-height: 1.4; }
     .tab-badge.red { background: #ff4a4a; color: #fff; animation: notif-pulse 2s ease-in-out infinite; }
+    @keyframes notif-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
+    /* RECHERCHE */
     .search-autocomplete-wrap { position: relative; margin-bottom: 2rem; }
-    .search-autocomplete-inner {
-      display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border);
-      transition: border-color 0.2s;
-    }
+    .search-autocomplete-inner { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); transition: border-color 0.2s; }
     .search-autocomplete-wrap.focused .search-autocomplete-inner { border-color: var(--accent); }
     .search-icon-wrap { background: var(--surface); display: flex; align-items: center; padding: 0 1rem; color: var(--muted); flex-shrink: 0; }
-    .search-autocomplete-input {
-      flex: 1; background: var(--surface); border: none;
-      padding: 1rem 1rem 1rem 0; font-family: var(--font-body);
-      font-size: 0.9rem; color: var(--text); outline: none;
-    }
+    .search-autocomplete-input { flex: 1; background: var(--surface); border: none; padding: 1rem 1rem 1rem 0; font-family: var(--font-body); font-size: 0.9rem; color: var(--text); outline: none; }
     .search-autocomplete-input::placeholder { color: var(--muted); }
-    .search-clear-btn {
-      background: var(--surface); border: none; padding: 0 1.2rem;
-      color: var(--muted); cursor: pointer; font-size: 0.85rem;
-      display: none; align-items: center; transition: color 0.2s;
-    }
+    .search-clear-btn { background: var(--surface); border: none; padding: 0 1.2rem; color: var(--muted); cursor: pointer; font-size: 0.85rem; display: none; align-items: center; transition: color 0.2s; }
     .search-clear-btn:hover { color: var(--text); }
-
-    .search-dropdown {
-      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-      background: var(--border); border: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 1px;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
-      z-index: 200; overflow: hidden;
-      opacity: 0; transform: translateY(-6px); pointer-events: none;
-      transition: opacity 0.15s, transform 0.15s;
-    }
+    .search-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--border); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 1px; box-shadow: 0 16px 40px rgba(0,0,0,0.6); z-index: 200; overflow: hidden; opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity 0.15s, transform 0.15s; }
     .search-dropdown.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
-    .drop-result-row {
-      background: var(--surface); padding: 0.85rem 1.2rem;
-      display: flex; align-items: center; gap: 1rem;
-      cursor: pointer; transition: background 0.12s;
-    }
+    .drop-result-row { background: var(--surface); padding: 0.85rem 1.2rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: background 0.12s; }
     .drop-result-row:hover { background: #1a1a1f; }
     .drop-result-row:hover .drop-name { color: var(--accent); }
     .drop-result-row:hover .drop-avatar { border-color: var(--accent); }
-
-    .drop-avatar {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--bg); border: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-head); font-weight: 900; font-size: 1rem;
-      color: var(--accent); flex-shrink: 0; transition: border-color 0.15s;
-    }
+    .drop-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 900; font-size: 1rem; color: var(--accent); flex-shrink: 0; transition: border-color 0.15s; }
     .drop-info { flex: 1; display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
     .drop-name { font-family: var(--font-head); font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; transition: color 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .drop-meta { font-size: 0.72rem; color: var(--muted); }
     .drop-action { flex-shrink: 0; }
-    .drop-btn-add {
-      font-family: var(--font-head); font-weight: 700; font-size: 0.75rem;
-      letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.8rem;
-      background: transparent; border: 1px solid var(--accent); color: var(--accent);
-      cursor: pointer; transition: all 0.2s; border-radius: 2px;
-    }
+    .drop-btn-add { font-family: var(--font-head); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.8rem; background: transparent; border: 1px solid var(--accent); color: var(--accent); cursor: pointer; transition: all 0.2s; border-radius: 2px; }
     .drop-btn-add:hover:not(:disabled):not(.sent) { background: var(--accent); color: var(--bg); }
     .drop-btn-add.sent { border-color: var(--muted); color: var(--muted); cursor: default; }
     .drop-btn-add:disabled { opacity: 0.6; cursor: default; }
     .drop-arrow { color: var(--muted); font-size: 0.9rem; margin-left: 0.3rem; flex-shrink: 0; }
-
     .drop-loading { padding: 1.2rem; display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 0.82rem; background: var(--surface); }
     .drop-empty { padding: 1.2rem; text-align: center; font-family: var(--font-head); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
 
+    /* SPINNERS */
     .spinner-sm { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* SECTIONS */
     .section { display: none; }
     .section.active { display: block; }
 
+    /* CARTES AMIS */
     .friends-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .friend-card { background: var(--surface); padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1.5rem; cursor: pointer; transition: background 0.15s; }
     .friend-card:hover { background: #1a1a1f; }
@@ -145,6 +114,7 @@
     .btn-confirm-no { background: transparent; color: var(--muted); border: 1px solid var(--border); }
     .btn-confirm-no:hover { color: var(--text); border-color: var(--muted); }
 
+    /* DEMANDES */
     .requests-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .request-card { background: var(--surface); padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1.5rem; }
     .request-info { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
@@ -158,26 +128,59 @@
     .btn-decline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
     .btn-decline:hover { border-color: #ff4a4a; color: #ff4a4a; }
 
+    /* ÉTAT VIDE */
     .empty-state { background: var(--surface); border: 1px solid var(--border); padding: 4rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .empty-icon { opacity: 0.25; color: var(--muted); }
     .empty-title { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
     .empty-sub { font-size: 0.85rem; color: var(--muted); max-width: 280px; line-height: 1.6; }
-
     .loading { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 0.75rem; color: var(--muted); font-size: 0.85rem; }
-    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 
+    /* TOAST */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--surface); border: 1px solid var(--border); padding: 1rem 1.5rem; font-family: var(--font-head); font-size: 0.9rem; letter-spacing: 0.05em; z-index: 999; transform: translateY(120px); opacity: 0; transition: all 0.3s; pointer-events: none; }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.success { border-color: var(--accent); color: var(--accent); }
     .toast.error { border-color: #ff4a4a; color: #ff4a4a; }
 
-    @media(max-width: 768px) {
-      nav { padding: 1rem 1.5rem; } nav ul { gap: 1.5rem; }
-      .container { padding: 0 1rem; }
+    /* RESPONSIVE MOBILE */
+    @media(max-width: 900px) {
+      nav { padding: 0.8rem 1.2rem; background: var(--bg); border-bottom: 1px solid var(--border); }
+      .nav-left-group { width: 100%; justify-content: space-between; }
+      nav ul { display: none !important; }
+      .nav-actions-empty { display: none; }
+
+      .container { margin-top: 70px; padding: 0 1rem 6rem 1rem; }
       .page-title { font-size: 2.2rem; }
       .friend-stats { display: none; }
       .friend-card, .request-card { padding: 1.2rem; }
       .request-actions { flex-direction: column; gap: 0.4rem; }
+
+      .toast { bottom: 5.5rem; right: 1rem; left: 1rem; text-align: center; }
+
+      /* BOTTOM NAV */
+      .app-bottom-nav {
+        display: flex; justify-content: space-around; align-items: center;
+        position: fixed; bottom: 0; left: 0; right: 0;
+        height: 68px;
+        background: rgba(20, 20, 24, 0.96); backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border); z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .app-bottom-nav-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 4px; color: var(--muted); text-decoration: none;
+        font-family: var(--font-head); font-size: 0.75rem; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        flex: 1; height: 100%; transition: color 0.2s; position: relative;
+      }
+      .app-bottom-nav-item svg { stroke: var(--muted); transition: stroke 0.2s; }
+      .app-bottom-nav-item.active { color: var(--accent); }
+      .app-bottom-nav-item.active svg { stroke: var(--accent); }
+      .bottom-nav-badge {
+        position: absolute; top: 8px; right: calc(50% - 18px);
+        background: #ff4a4a; color: #fff; font-size: 0.6rem; font-weight: 900;
+        min-width: 16px; height: 16px; border-radius: 8px; padding: 0 4px;
+        display: flex; align-items: center; justify-content: center;
+      }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -191,16 +194,15 @@
       <a href="index.html" class="logo">Run<span>Log</span></a>
     </div>
     <ul id="nav-links">
-      <li><a href="index.html" id="nav-home" data-trad="menu_accueil">Accueil</a></li>
-      <li><a href="courses.html" id="nav-runs" data-trad="menu_courses">Courses</a></li>
-      <li><a href="stats.html" id="nav-stats" data-trad="nav-stats">Stats</a></li>
-      <li><a href="profile.html" id="nav-profile" class="active" data-trad="nav-profile">Profil</a></li>
+      <li><a href="index.html" id="nav-home">Accueil</a></li>
+      <li><a href="courses.html" id="nav-runs">Courses</a></li>
+      <li><a href="stats.html" id="nav-stats">Stats</a></li>
+      <li><a href="profile.html" id="nav-profile" class="active">Profil</a></li>
     </ul>
     <div class="nav-actions-empty"></div>
   </nav>
 
   <div class="container">
-
     <div class="page-header">
       <div class="page-title-block">
         <div class="page-title" id="page-title">Mes Amis</div>
@@ -209,18 +211,14 @@
     </div>
 
     <div class="tabs">
-      <!-- Amis -->
       <button class="tab-btn active" onclick="switchTab('amis')" id="tab-amis">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
         <span id="btn-lbl-amis">Amis</span>
         <span class="tab-badge" id="badge-amis">0</span>
       </button>
-      <!-- Demandes -->
       <button class="tab-btn" onclick="switchTab('demandes')" id="tab-demandes">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -229,11 +227,9 @@
         <span id="btn-lbl-demandes">Demandes</span>
         <span class="tab-badge red" id="badge-demandes" style="display:none">0</span>
       </button>
-      <!-- Rechercher -->
       <button class="tab-btn" onclick="switchTab('recherche')" id="tab-recherche">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <span id="btn-lbl-recherche">Rechercher</span>
       </button>
@@ -254,31 +250,43 @@
         <div class="search-autocomplete-inner">
           <div class="search-icon-wrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </div>
-          <input
-            id="search-input"
-            class="search-autocomplete-input"
-            type="text"
+          <input id="search-input" class="search-autocomplete-input" type="text"
             placeholder="Tape 2 lettres pour chercher un athlète…"
-            maxlength="40"
-            autocomplete="off"
-            oninput="onSearchInput(this.value)"
-          />
+            maxlength="40" autocomplete="off" oninput="onSearchInput(this.value)" />
           <button class="search-clear-btn" id="search-clear" title="Effacer">✕</button>
         </div>
         <div class="search-dropdown" id="search-dropdown"></div>
       </div>
     </div>
+  </div>
 
+  <!-- BOTTOM NAV MOBILE -->
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span id="bnav-home">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span id="bnav-courses">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span id="bnav-stats">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="bnav-profile">Profil</span>
+      <span class="bottom-nav-badge" id="bnav-badge-demandes" style="display:none"></span>
+    </a>
   </div>
 
   <div id="toast" class="toast"></div>
 
   <script>
-    // ── SVG ICÔNES EMPTY STATE ────────────────────────────────────────────────
     var svgFriends = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
     var svgBell    = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
     var svgWarn    = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
@@ -291,88 +299,88 @@
 
     const translations = {
       fr: {
-        nav_home: "Accueil", nav_runs: "Courses", nav_stats: "Stats", nav_profile: "Profil",
-        page_title: "Mes Amis", page_subtitle: "Suis les performances de tes partenaires d'entraînement",
-        tab_amis: "Amis", tab_demandes: "Demandes", tab_recherche: "Rechercher",
-        loading: "Chargement…", searching: "Recherche…",
-        search_ph: "Tape 2 lettres pour chercher un athlète…",
-        no_athlete: "Aucun athlète trouvé", err_search: "Erreur de recherche",
-        already_friends: "Déjà amis ✓", request_sent: "Demande envoyée", add_friend: "Ajouter +",
-        toast_req_success: "Demande d'ami envoyée !", toast_req_exists: "Une demande existe déjà.",
-        toast_req_err: "Erreur lors de l'envoi", toast_remove_success: "Ami supprimé.",
-        toast_remove_err: "Erreur lors de la suppression",
-        lbl_courses: "Courses", lbl_km: "km", lbl_remove_confirm: "Supprimer ?",
-        lbl_yes: "Oui", lbl_no: "Non", btn_accept: "Accepter", btn_decline: "Refuser",
-        empty_friends_title: "Aucun ami pour l'instant", empty_friends_sub: "Utilise l'onglet Rechercher pour trouver d'autres coureurs.",
-        empty_req_title: "Aucune demande en attente", empty_req_sub: "Les nouvelles demandes d'amis apparaîtront ici.",
-        err_load: "Erreur de chargement",
-        cat_minime: "Minime", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Espoir (ES)",
-        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "Catégorie non renseignée",
-        date_format: 'fr-FR', date_options: {day:'numeric', month:'long'}
+        nav_home:"Accueil", nav_runs:"Courses", nav_stats:"Stats", nav_profile:"Profil",
+        bnav_home:"Accueil", bnav_courses:"Courses", bnav_stats:"Stats", bnav_profile:"Profil",
+        page_title:"Mes Amis", page_subtitle:"Suis les performances de tes partenaires d'entraînement",
+        tab_amis:"Amis", tab_demandes:"Demandes", tab_recherche:"Rechercher",
+        loading:"Chargement…", searching:"Recherche…",
+        search_ph:"Tape 2 lettres pour chercher un athlète…",
+        no_athlete:"Aucun athlète trouvé", err_search:"Erreur de recherche",
+        already_friends:"Déjà amis ✓", request_sent:"Demande envoyée", add_friend:"Ajouter +",
+        toast_req_success:"Demande d'ami envoyée !", toast_req_exists:"Une demande existe déjà.",
+        toast_req_err:"Erreur lors de l'envoi", toast_remove_success:"Ami supprimé.",
+        toast_remove_err:"Erreur lors de la suppression",
+        lbl_courses:"Courses", lbl_km:"km", lbl_remove_confirm:"Supprimer ?",
+        lbl_yes:"Oui", lbl_no:"Non", btn_accept:"Accepter", btn_decline:"Refuser",
+        empty_friends_title:"Aucun ami pour l'instant", empty_friends_sub:"Utilise l'onglet Rechercher pour trouver d'autres coureurs.",
+        empty_req_title:"Aucune demande en attente", empty_req_sub:"Les nouvelles demandes d'amis apparaîtront ici.",
+        err_load:"Erreur de chargement",
+        cat_minime:"Minime", cat_cadet:"Cadet (CA)", cat_junior:"Junior (JU)", cat_espoir:"Espoir (ES)",
+        cat_senior:"Senior (SE)", cat_master:"Master", cat_no_date:"Catégorie non renseignée",
+        date_format:'fr-FR', date_options:{day:'numeric', month:'long'}
       },
       en: {
-        nav_home: "Home", nav_runs: "Runs", nav_stats: "Stats", nav_profile: "Profile",
-        page_title: "My Friends", page_subtitle: "Follow your training partners' performances",
-        tab_amis: "Friends", tab_demandes: "Requests", tab_recherche: "Search",
-        loading: "Loading…", searching: "Searching…",
-        search_ph: "Type 2 letters to search for an athlete…",
-        no_athlete: "No athlete found", err_search: "Search error",
-        already_friends: "Already friends ✓", request_sent: "Request sent", add_friend: "Add +",
-        toast_req_success: "Friend request sent!", toast_req_exists: "A request already exists.",
-        toast_req_err: "Error sending request", toast_remove_success: "Friend removed.",
-        toast_remove_err: "Error removing friend",
-        lbl_courses: "Races", lbl_km: "km", lbl_remove_confirm: "Remove?",
-        lbl_yes: "Yes", lbl_no: "No", btn_accept: "Accept", btn_decline: "Decline",
-        empty_friends_title: "No friends yet", empty_friends_sub: "Use the Search tab to find other runners.",
-        empty_req_title: "No pending requests", empty_req_sub: "New friend requests will show up here.",
-        err_load: "Loading error",
-        cat_minime: "Youth", cat_cadet: "Cadet (CA)", cat_junior: "Junior (JU)", cat_espoir: "Hopeful (ES)",
-        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "Category not specified",
-        date_format: 'en-US', date_options: {day:'numeric', month:'long'}
+        nav_home:"Home", nav_runs:"Runs", nav_stats:"Stats", nav_profile:"Profile",
+        bnav_home:"Home", bnav_courses:"Races", bnav_stats:"Stats", bnav_profile:"Profile",
+        page_title:"My Friends", page_subtitle:"Follow your training partners' performances",
+        tab_amis:"Friends", tab_demandes:"Requests", tab_recherche:"Search",
+        loading:"Loading…", searching:"Searching…",
+        search_ph:"Type 2 letters to search for an athlete…",
+        no_athlete:"No athlete found", err_search:"Search error",
+        already_friends:"Already friends ✓", request_sent:"Request sent", add_friend:"Add +",
+        toast_req_success:"Friend request sent!", toast_req_exists:"A request already exists.",
+        toast_req_err:"Error sending request", toast_remove_success:"Friend removed.",
+        toast_remove_err:"Error removing friend",
+        lbl_courses:"Races", lbl_km:"km", lbl_remove_confirm:"Remove?",
+        lbl_yes:"Yes", lbl_no:"No", btn_accept:"Accept", btn_decline:"Decline",
+        empty_friends_title:"No friends yet", empty_friends_sub:"Use the Search tab to find other runners.",
+        empty_req_title:"No pending requests", empty_req_sub:"New friend requests will show up here.",
+        err_load:"Loading error",
+        cat_minime:"Youth", cat_cadet:"Cadet (CA)", cat_junior:"Junior (JU)", cat_espoir:"Hopeful (ES)",
+        cat_senior:"Senior (SE)", cat_master:"Master", cat_no_date:"Category not specified",
+        date_format:'en-US', date_options:{day:'numeric', month:'long'}
       },
       es: {
-        nav_home: "Inicio", nav_runs: "Carreras", nav_stats: "Estadísticas", nav_profile: "Perfil",
-        page_title: "Mis Amigos", page_subtitle: "Sigue el rendimiento de tus compañeros de entrenamiento",
-        tab_amis: "Amigos", tab_demandes: "Solicitudes", tab_recherche: "Buscar",
-        loading: "Cargando…", searching: "Buscando…",
-        search_ph: "Escribe 2 letras para buscar un atleta…",
-        no_athlete: "No se encontró ningún atleta", err_search: "Error de búsqueda",
-        already_friends: "Ya son amigos ✓", request_sent: "Solicitud enviada", add_friend: "Añadir +",
-        toast_req_success: "¡Solicitud de amistad enviada!", toast_req_exists: "Ya existe una solicitud.",
-        toast_req_err: "Error al enviar la solicitud", toast_remove_success: "Amigo eliminado.",
-        toast_remove_err: "Error al eliminar amigo",
-        lbl_courses: "Carreras", lbl_km: "km", lbl_remove_confirm: "¿Eliminar?",
-        lbl_yes: "Sí", lbl_no: "No", btn_accept: "Aceptar", btn_decline: "Rechazar",
-        empty_friends_title: "Sin amigos por ahora", empty_friends_sub: "Utiliza la pestaña Buscar para encontrar otros corredores.",
-        empty_req_title: "No hay solicitudes pendientes", empty_req_sub: "Las nuevas solicitudes de amistad aparecerán aquí.",
-        err_load: "Error de carga",
-        cat_minime: "Mínimo", cat_cadet: "Cadete (CA)", cat_junior: "Junior (JU)", cat_espoir: "Promesa (ES)",
-        cat_senior: "Senior (SE)", cat_master: "Master", cat_no_date: "Categoría no especificada",
-        date_format: 'es-ES', date_options: {day:'numeric', month:'long'}
+        nav_home:"Inicio", nav_runs:"Carreras", nav_stats:"Estadísticas", nav_profile:"Perfil",
+        bnav_home:"Inicio", bnav_courses:"Carreras", bnav_stats:"Stats", bnav_profile:"Perfil",
+        page_title:"Mis Amigos", page_subtitle:"Sigue el rendimiento de tus compañeros de entrenamiento",
+        tab_amis:"Amigos", tab_demandes:"Solicitudes", tab_recherche:"Buscar",
+        loading:"Cargando…", searching:"Buscando…",
+        search_ph:"Escribe 2 letras para buscar un atleta…",
+        no_athlete:"No se encontró ningún atleta", err_search:"Error de búsqueda",
+        already_friends:"Ya son amigos ✓", request_sent:"Solicitud enviada", add_friend:"Añadir +",
+        toast_req_success:"¡Solicitud de amistad enviada!", toast_req_exists:"Ya existe una solicitud.",
+        toast_req_err:"Error al enviar la solicitud", toast_remove_success:"Amigo eliminado.",
+        toast_remove_err:"Error al eliminar amigo",
+        lbl_courses:"Carreras", lbl_km:"km", lbl_remove_confirm:"¿Eliminar?",
+        lbl_yes:"Sí", lbl_no:"No", btn_accept:"Aceptar", btn_decline:"Rechazar",
+        empty_friends_title:"Sin amigos por ahora", empty_friends_sub:"Utiliza la pestaña Buscar para encontrar otros corredores.",
+        empty_req_title:"No hay solicitudes pendientes", empty_req_sub:"Las nuevas solicitudes de amistad aparecerán aquí.",
+        err_load:"Error de carga",
+        cat_minime:"Mínimo", cat_cadet:"Cadete (CA)", cat_junior:"Junior (JU)", cat_espoir:"Promesa (ES)",
+        cat_senior:"Senior (SE)", cat_master:"Master", cat_no_date:"Categoría no especificada",
+        date_format:'es-ES', date_options:{day:'numeric', month:'long'}
       }
     };
 
     function applyLanguage(lang) {
-      currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
+      currentLang = ['fr','en','es'].includes(lang) ? lang : 'fr';
       const t = translations[currentLang];
-
       if(document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
       if(document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
       if(document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
       if(document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
-
+      if(document.getElementById('bnav-home')) document.getElementById('bnav-home').textContent = t.bnav_home;
+      if(document.getElementById('bnav-courses')) document.getElementById('bnav-courses').textContent = t.bnav_courses;
+      if(document.getElementById('bnav-stats')) document.getElementById('bnav-stats').textContent = t.bnav_stats;
+      if(document.getElementById('bnav-profile')) document.getElementById('bnav-profile').textContent = t.bnav_profile;
       if(document.getElementById('page-title')) document.getElementById('page-title').textContent = t.page_title;
       if(document.getElementById('page-subtitle')) document.getElementById('page-subtitle').textContent = t.page_subtitle;
-
       if(document.getElementById('btn-lbl-amis')) document.getElementById('btn-lbl-amis').textContent = t.tab_amis;
       if(document.getElementById('btn-lbl-demandes')) document.getElementById('btn-lbl-demandes').textContent = t.tab_demandes;
       if(document.getElementById('btn-lbl-recherche')) document.getElementById('btn-lbl-recherche').textContent = t.tab_recherche;
-
-      document.querySelectorAll('.lbl-loading').forEach(el => el.textContent = t.loading);
+      document.querySelectorAll('.lbl-loading').forEach(function(el){ el.textContent = t.loading; });
       if(document.getElementById('search-input')) document.getElementById('search-input').placeholder = t.search_ph;
-
-      if (document.getElementById('friends-container') && document.getElementById('friends-container').style.display !== 'none') chargerAmis();
-      if (document.getElementById('demandes-container') && document.getElementById('demandes-container').style.display !== 'none') chargerDemandes();
     }
 
     try {
@@ -409,11 +417,11 @@
     }
 
     function showToast(msg, type) {
-      var t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show' + (type ? ' ' + type : '');
+      var el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (type ? ' ' + type : '');
       clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(function(){ t.className = 'toast'; }, 3000);
+      window._toastTimer = setTimeout(function(){ el.className = 'toast'; }, 3000);
     }
 
     function switchTab(tab) {
@@ -427,14 +435,8 @@
       if (tab === 'recherche') setTimeout(function(){ document.getElementById('search-input').focus(); }, 50);
     }
 
-    function showDropdown() {
-      document.getElementById('search-dropdown').classList.add('visible');
-      document.getElementById('search-wrap').classList.add('focused');
-    }
-    function hideDropdown() {
-      document.getElementById('search-dropdown').classList.remove('visible');
-      document.getElementById('search-wrap').classList.remove('focused');
-    }
+    function showDropdown() { document.getElementById('search-dropdown').classList.add('visible'); document.getElementById('search-wrap').classList.add('focused'); }
+    function hideDropdown() { document.getElementById('search-dropdown').classList.remove('visible'); document.getElementById('search-wrap').classList.remove('focused'); }
 
     function onSearchInput(val) {
       var clearBtn = document.getElementById('search-clear');
@@ -442,63 +444,34 @@
       clearTimeout(searchTimeout);
       var dropdown = document.getElementById('search-dropdown');
       const t = translations[currentLang];
-
       if (val.trim().length < 2) { hideDropdown(); dropdown.innerHTML = ''; return; }
-
       dropdown.innerHTML = '<div class="drop-loading"><div class="spinner-sm"></div> ' + t.searching + '</div>';
       showDropdown();
-
       searchTimeout = setTimeout(async function() {
         try {
-          var res = await supabaseClient
-            .from('profiles')
-            .select('id, username, date_naissance')
-            .ilike('username', '%' + val.trim() + '%')
-            .neq('id', currentUserId)
-            .limit(8);
-
+          var res = await supabaseClient.from('profiles').select('id, username, date_naissance').ilike('username', '%' + val.trim() + '%').neq('id', currentUserId).limit(8);
           if (res.error) throw res.error;
           var results = res.data || [];
-
-          if (results.length === 0) {
-            dropdown.innerHTML = '<div class="drop-empty">' + t.no_athlete + '</div>';
-            return;
-          }
-
+          if (results.length === 0) { dropdown.innerHTML = '<div class="drop-empty">' + t.no_athlete + '</div>'; return; }
           var html = '';
           results.forEach(function(p) {
-            var pseudo   = escapeHtml(p.username || 'Athlète');
+            var pseudo = escapeHtml(p.username || 'Athlète');
             var initiale = (p.username || '?').charAt(0).toUpperCase();
-            var cat      = escapeHtml(calculerCategorie(p.date_naissance) || t.cat_no_date);
-            var statut   = amisExistantsCache[p.id];
-
+            var cat = escapeHtml(calculerCategorie(p.date_naissance) || t.cat_no_date);
+            var statut = amisExistantsCache[p.id];
             var btnHtml;
-            if (statut === 'accepte') {
-              btnHtml = '<button class="drop-btn-add sent" disabled>' + t.already_friends + '</button>';
-            } else if (statut === 'en_attente') {
-              btnHtml = '<button class="drop-btn-add sent" disabled>' + t.request_sent + '</button>';
-            } else {
-              btnHtml = '<button class="drop-btn-add" onclick="envoyerDemandeDropdown(\'' + p.id + '\', event, this)">' + t.add_friend + '</button>';
-            }
-
-            html +=
-              '<div class="drop-result-row" onclick="naviguerVersAthlete(\'' + p.id + '\', event)">' +
-                '<div class="drop-avatar">' + initiale + '</div>' +
-                '<div class="drop-info">' +
-                  '<div class="drop-name">' + pseudo + '</div>' +
-                  '<div class="drop-meta">' + cat + '</div>' +
-                '</div>' +
-                '<div class="drop-action">' + btnHtml + '</div>' +
-                '<span class="drop-arrow">→</span>' +
-              '</div>';
+            if (statut === 'accepte') { btnHtml = '<button class="drop-btn-add sent" disabled>' + t.already_friends + '</button>'; }
+            else if (statut === 'en_attente') { btnHtml = '<button class="drop-btn-add sent" disabled>' + t.request_sent + '</button>'; }
+            else { btnHtml = '<button class="drop-btn-add" onclick="envoyerDemandeDropdown(\'' + p.id + '\', event, this)">' + t.add_friend + '</button>'; }
+            html += '<div class="drop-result-row" onclick="naviguerVersAthlete(\'' + p.id + '\', event)">'
+              + '<div class="drop-avatar">' + initiale + '</div>'
+              + '<div class="drop-info"><div class="drop-name">' + pseudo + '</div><div class="drop-meta">' + cat + '</div></div>'
+              + '<div class="drop-action">' + btnHtml + '</div>'
+              + '<span class="drop-arrow">→</span>'
+              + '</div>';
           });
-
           dropdown.innerHTML = html;
-
-        } catch(err) {
-          dropdown.innerHTML = '<div class="drop-empty">' + t.err_search + '</div>';
-          console.error(err);
-        }
+        } catch(err) { dropdown.innerHTML = '<div class="drop-empty">' + t.err_search + '</div>'; console.error(err); }
       }, 300);
     }
 
@@ -508,34 +481,24 @@
     }
 
     async function envoyerDemandeDropdown(targetId, e, btn) {
-      e.stopPropagation();
-      btn.disabled = true;
-      btn.textContent = '…';
+      e.stopPropagation(); btn.disabled = true; btn.textContent = '…';
       const t = translations[currentLang];
       try {
-        var res = await supabaseClient.from('amis').insert({
-          demandeur_id: currentUserId, receveur_id: targetId, statut: 'en_attente'
-        });
+        var res = await supabaseClient.from('amis').insert({ demandeur_id: currentUserId, receveur_id: targetId, statut: 'en_attente' });
         if (res.error) throw res.error;
-        btn.textContent = t.request_sent;
-        btn.className = 'drop-btn-add sent';
+        btn.textContent = t.request_sent; btn.className = 'drop-btn-add sent';
         amisExistantsCache[targetId] = 'en_attente';
         showToast(t.toast_req_success, 'success');
       } catch(err) {
-        btn.disabled = false;
-        btn.textContent = t.add_friend;
-        if (err.code === '23505') {
-          btn.textContent = t.request_sent; btn.className = 'drop-btn-add sent';
-          showToast(t.toast_req_exists, '');
-        } else { showToast(t.toast_req_err, 'error'); console.error(err); }
+        btn.disabled = false; btn.textContent = t.add_friend;
+        if (err.code === '23505') { btn.textContent = t.request_sent; btn.className = 'drop-btn-add sent'; showToast(t.toast_req_exists, ''); }
+        else { showToast(t.toast_req_err, 'error'); console.error(err); }
       }
     }
 
     async function chargerRelationsExistantes() {
       try {
-        var res = await supabaseClient
-          .from('amis').select('demandeur_id, receveur_id, statut')
-          .or('demandeur_id.eq.' + currentUserId + ',receveur_id.eq.' + currentUserId);
+        var res = await supabaseClient.from('amis').select('demandeur_id, receveur_id, statut').or('demandeur_id.eq.' + currentUserId + ',receveur_id.eq.' + currentUserId);
         amisExistantsCache = {};
         (res.data || []).forEach(function(r) {
           var other = r.demandeur_id === currentUserId ? r.receveur_id : r.demandeur_id;
@@ -558,13 +521,12 @@
       const t = translations[currentLang];
       var cat = calculerCategorie(profile.date_naissance) || '—';
       var wrap = document.createElement('div');
-      wrap.className = 'friend-card';
-      wrap.id = 'ami-' + profile.id;
+      wrap.className = 'friend-card'; wrap.id = 'ami-' + profile.id;
       wrap.innerHTML =
         '<div class="friend-avatar">' + initiale + '</div>' +
         '<div class="friend-info"><div class="friend-name">' + escapeHtml(profile.username||'Athlète') + '</div><div class="friend-cat">' + cat + '</div></div>' +
         '<div class="friend-stats">' +
-          '<div class="friend-stat"><span class="friend-stat-val">' + stats.count + '</span><span class="friend-stat-lbl">' + (t.lbl_courses || t.lbl_runs) + '</span></div>' +
+          '<div class="friend-stat"><span class="friend-stat-val">' + stats.count + '</span><span class="friend-stat-lbl">' + t.lbl_courses + '</span></div>' +
           '<div class="friend-stat"><span class="friend-stat-val">' + stats.km + '</span><span class="friend-stat-lbl">' + t.lbl_km + '</span></div>' +
         '</div>' +
         '<div class="friend-actions">' +
@@ -600,17 +562,13 @@
       card.querySelectorAll('button').forEach(function(b){ b.disabled=true; });
       const t = translations[currentLang];
       try {
-        var res = await supabaseClient.from('amis').delete()
-          .or('and(demandeur_id.eq.'+currentUserId+',receveur_id.eq.'+id+'),and(demandeur_id.eq.'+id+',receveur_id.eq.'+currentUserId+')');
+        var res = await supabaseClient.from('amis').delete().or('and(demandeur_id.eq.'+currentUserId+',receveur_id.eq.'+id+'),and(demandeur_id.eq.'+id+',receveur_id.eq.'+currentUserId+')');
         if (res.error) throw res.error;
         card.style.transition = 'opacity .3s,transform .3s,max-height .35s';
-        card.style.opacity='0'; card.style.transform='translateX(20px)';
-        card.style.overflow='hidden'; card.style.maxHeight=card.offsetHeight+'px';
+        card.style.opacity='0'; card.style.transform='translateX(20px)'; card.style.overflow='hidden'; card.style.maxHeight=card.offsetHeight+'px';
         setTimeout(function(){ card.style.maxHeight='0'; card.style.padding='0'; }, 280);
         setTimeout(function(){
-          card.remove();
-          majBadgeAmis(-1);
-          delete amisExistantsCache[id];
+          card.remove(); majBadgeAmis(-1); delete amisExistantsCache[id];
           var list = document.querySelector('.friends-list');
           if (!list || list.children.length === 0) {
             document.getElementById('friends-container').innerHTML = '<div class="empty-state"><div class="empty-icon">' + svgFriends + '</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>';
@@ -630,10 +588,7 @@
         var rows = res.data||[];
         document.getElementById('badge-amis').textContent = rows.length;
         loading.style.display='none'; container.style.display='block';
-        if (rows.length===0) {
-          container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgFriends + '</div><div class="empty-title">' + t.empty_friends_title + '</div><div class="empty-sub">' + t.empty_friends_sub + '</div></div>';
-          return;
-        }
+        if (rows.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">'+svgFriends+'</div><div class="empty-title">'+t.empty_friends_title+'</div><div class="empty-sub">'+t.empty_friends_sub+'</div></div>'; return; }
         var amiIds = rows.map(function(r){ return r.demandeur_id===currentUserId?r.receveur_id:r.demandeur_id; });
         var profRes = await supabaseClient.from('profiles').select('id,username,date_naissance').in('id',amiIds);
         if (profRes.error) throw profRes.error;
@@ -644,7 +599,7 @@
         container.innerHTML=''; container.appendChild(list);
       } catch(e) {
         loading.style.display='none'; container.style.display='block';
-        container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgWarn + '</div><div class="empty-title">' + t.err_load + '</div></div>';
+        container.innerHTML='<div class="empty-state"><div class="empty-icon">'+svgWarn+'</div><div class="empty-title">'+t.err_load+'</div></div>';
         console.error(e);
       }
     }
@@ -659,37 +614,38 @@
         var demandes = res.data||[];
         loading.style.display='none'; container.style.display='block';
         var badge = document.getElementById('badge-demandes');
-        if (demandes.length>0) { badge.textContent=demandes.length>9?'9+':demandes.length; badge.style.display='inline'; } else { badge.style.display='none'; }
-        if (demandes.length===0) {
-          container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgBell + '</div><div class="empty-title">' + t.empty_req_title + '</div><div class="empty-sub">' + t.empty_req_sub + '</div></div>';
-          return;
+        var bnavBadge = document.getElementById('bnav-badge-demandes');
+        if (demandes.length > 0) {
+          var n = demandes.length > 9 ? '9+' : String(demandes.length);
+          badge.textContent = n; badge.style.display = 'inline';
+          if (bnavBadge) { bnavBadge.textContent = n; bnavBadge.style.display = 'flex'; }
+        } else {
+          badge.style.display = 'none';
+          if (bnavBadge) bnavBadge.style.display = 'none';
         }
+        if (demandes.length===0) { container.innerHTML='<div class="empty-state"><div class="empty-icon">'+svgBell+'</div><div class="empty-title">'+t.empty_req_title+'</div><div class="empty-sub">'+t.empty_req_sub+'</div></div>'; return; }
         var ids = demandes.map(function(d){ return d.demandeur_id; });
         var profRes = await supabaseClient.from('profiles').select('id,username,date_naissance').in('id',ids);
         var profilesMap = {}; (profRes.data||[]).forEach(function(p){ profilesMap[p.id]=p; });
         var list = document.createElement('div'); list.className='requests-list';
-
         demandes.forEach(function(d) {
-          var p=profilesMap[d.demandeur_id]||{};
-          var initiale=(p.username||'?').charAt(0).toUpperCase();
-          var cat=calculerCategorie(p.date_naissance)||'';
-          var date=d.created_at?new Date(d.created_at).toLocaleDateString(t.date_format, t.date_options):'';
-          var card=document.createElement('div'); card.className='request-card'; card.id='req-'+d.id;
-          card.innerHTML='<div class="friend-avatar" style="width:44px;height:44px;font-size:1.1rem">'+initiale+'</div>' +
-            '<div class="request-info">' +
-              '<div class="request-name">'+escapeHtml(p.username||'Athlète')+'</div>' +
-              '<div class="request-meta">'+cat+(cat && date?' • ' : '')+date+'</div>' +
-            '</div>' +
-            '<div class="request-actions">' +
-              '<button class="btn-accept" onclick="traiterDemande(\''+d.id+'\', \''+d.demandeur_id+'\', \'accepte\')">'+t.btn_accept+'</button>' +
-              '<button class="btn-decline" onclick="traiterDemande(\''+d.id+'\', \''+d.demandeur_id+'\', \'refuse\')">'+t.btn_decline+'</button>' +
-            '</div>';
+          var p = profilesMap[d.demandeur_id]||{};
+          var initiale = (p.username||'?').charAt(0).toUpperCase();
+          var cat = calculerCategorie(p.date_naissance)||'';
+          var date = d.created_at ? new Date(d.created_at).toLocaleDateString(t.date_format, t.date_options) : '';
+          var card = document.createElement('div'); card.className='request-card'; card.id='req-'+d.id;
+          card.innerHTML='<div class="friend-avatar" style="width:44px;height:44px;font-size:1.1rem">'+initiale+'</div>'
+            +'<div class="request-info"><div class="request-name">'+escapeHtml(p.username||'Athlète')+'</div><div class="request-meta">'+cat+(cat&&date?' • ':'')+date+'</div></div>'
+            +'<div class="request-actions">'
+            +'<button class="btn-accept" onclick="traiterDemande(\''+d.id+'\',\''+d.demandeur_id+'\',\'accepte\')">'+t.btn_accept+'</button>'
+            +'<button class="btn-decline" onclick="traiterDemande(\''+d.id+'\',\''+d.demandeur_id+'\',\'refuse\')">'+t.btn_decline+'</button>'
+            +'</div>';
           list.appendChild(card);
         });
         container.innerHTML=''; container.appendChild(list);
       } catch(e) {
         loading.style.display='none'; container.style.display='block';
-        container.innerHTML='<div class="empty-state"><div class="empty-icon">' + svgWarn + '</div><div class="empty-title">' + t.err_load + '</div></div>';
+        container.innerHTML='<div class="empty-state"><div class="empty-icon">'+svgWarn+'</div><div class="empty-title">'+t.err_load+'</div></div>';
         console.error(e);
       }
     }
@@ -697,7 +653,7 @@
     async function traiterDemande(relationId, demandeurId, action) {
       var card = document.getElementById('req-' + relationId);
       if (!card) return;
-      card.querySelectorAll('button').forEach(b => b.disabled = true);
+      card.querySelectorAll('button').forEach(function(b){ b.disabled=true; });
       const t = translations[currentLang];
       try {
         if (action === 'accepte') {
@@ -713,7 +669,7 @@
         chargerAmis();
         chargerDemandes();
       } catch(err) {
-        card.querySelectorAll('button').forEach(b => b.disabled = false);
+        card.querySelectorAll('button').forEach(function(b){ b.disabled=false; });
         showToast(t.err_load, 'error');
       }
     }
@@ -725,11 +681,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
-      var fallbackLang = localStorage.getItem('runlog_lang');
-      if (!fallbackLang) {
-        var browserLang = navigator.language || navigator.userLanguage;
-        fallbackLang = browserLang.split('-')[0];
-      }
+      var fallbackLang = localStorage.getItem('runlog_lang') || (navigator.language || navigator.userLanguage).split('-')[0];
       applyLanguage(fallbackLang);
 
       document.addEventListener('click', function(e) {
@@ -738,21 +690,17 @@
 
       document.getElementById('search-clear').addEventListener('click', function() {
         var input = document.getElementById('search-input');
-        input.value = ''; input.focus();
-        onSearchInput('');
+        input.value = ''; input.focus(); onSearchInput('');
       });
 
       if (supabaseClient) {
         var authRes = await supabaseClient.auth.getUser();
         if (authRes.data && authRes.data.user) {
           currentUserId = authRes.data.user.id;
-
           try {
-            const { data: profile } = await supabaseClient
-              .from('profiles').select('langue').eq('id', currentUserId).maybeSingle();
+            const { data: profile } = await supabaseClient.from('profiles').select('langue').eq('id', currentUserId).maybeSingle();
             if (profile && profile.langue) applyLanguage(profile.langue);
-          } catch (langErr) { console.error(langErr); }
-
+          } catch(langErr) { console.error(langErr); }
           await chargerRelationsExistantes();
           await chargerAmis();
           await chargerDemandes();
