@@ -402,6 +402,24 @@
         resultsDiv.innerHTML = html;
       }, 300);
     }
+    function parseFrenchDate(dateStr) {
+  if (!dateStr) return new Date(0);
+  var moisFr = {
+    janvier:0, fevrier:1, février:1, mars:2, avril:3, mai:4, juin:5,
+    juillet:6, aout:7, août:7, septembre:8, octobre:9, novembre:10, decembre:11, décembre:11
+  };
+  var cleanStr = dateStr.toLowerCase().replace(/[^a-z0-9éû]/g, ' ');
+  var parts = cleanStr.split(/\s+/).filter(Boolean);
+  var jour = 1, mois = 0, annee = new Date().getFullYear();
+  if (parts.length === 3) {
+    jour  = parseInt(parts[0]) || 1;
+    mois  = moisFr[parts[1]] !== undefined ? moisFr[parts[1]] : 0;
+    annee = parseInt(parts[2]) || annee;
+  } else if (parts.length === 1 && !isNaN(parts[0])) {
+    annee = parseInt(parts[0]);
+  }
+  return new Date(annee, mois, jour);
+}
 
     Chart.defaults.color = '#6b6b72';
     Chart.defaults.font  = { family: "'Barlow Condensed', sans-serif", size: 12 };
@@ -478,8 +496,12 @@
         barChart('chart-km',    annees, kmParAn,    accentColor);
         barChart('chart-nb',    annees, nbParAn,    accent2Color);
         barChart('chart-dplus', annees, dplusParAn, '#7c6fff');
-
-        var coursesAvecPart = courses.filter(function(c){ return parseInt(c.participants)>0 && parseInt(c.classement)>0; });
+ 
+            var coursesAvecPart = courses
+        .filter(function(c){ return parseInt(c.participants)>0 && parseInt(c.classement)>0; })
+        .sort(function(a, b) {
+          return parseFrenchDate(a.date || String(a.annee)) - parseFrenchDate(b.date || String(b.annee));
+        });
         var pct      = coursesAvecPart.map(function(c){ return Math.round(((parseInt(c.participants)-parseInt(c.classement))/parseInt(c.participants))*1000)/10; });
         var ptColors = pct.map(function(p){ return p>=90 ? accentColor+'dd' : p>=70 ? '#ffaa00dd' : accent2Color+'dd'; });
         var ptBorders= pct.map(function(p){ return p>=90 ? accentColor : p>=70 ? '#ffaa00' : accent2Color; });
