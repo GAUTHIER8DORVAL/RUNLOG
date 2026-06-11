@@ -4,9 +4,9 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="/manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Fiche Course — RunLog</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -14,19 +14,29 @@
       --accent: #e8ff47; --accent2: #ff6b35; --text: #f0f0ee; --muted: #6b6b72;
       --font-head: 'Barlow Condensed', sans-serif; --font-body: 'DM Sans', sans-serif;
     }
-    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
 
     /* SVG icon helpers */
     .icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
     .icon svg { display: block; }
 
-    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; border-bottom: 1px solid var(--border); background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100; }
-    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; flex: 1; }
+    /* ── NAV DESKTOP ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,.88); backdrop-filter: blur(12px); z-index: 100;
+    }
+    .nav-left-group { display: flex; align-items: center; gap: 2.5rem; flex: 1; }
+    .logo { font-family: var(--font-head); font-weight: 900; font-size: 1.4rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    nav ul { list-style: none; display: flex; gap: 2.5rem; justify-content: center; }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     nav a { font-family: var(--font-head); font-weight: 500; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
-    nav a:hover { color: var(--accent); }
-    nav::after { content: ''; flex: 1; display: block; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    .nav-actions-empty { flex: 1; display: flex; justify-content: flex-end; }
+
+    /* ── BARRE NAV MOBILE (BAS) ── */
+    .app-bottom-nav { display: none; }
 
     .main-content { margin-top: 85px; }
 
@@ -35,7 +45,7 @@
     .back-link:hover svg { stroke: var(--accent); }
     .back-link svg { stroke: var(--muted); transition: stroke .2s; }
 
-    /* HERO */
+    /* ── HERO ── */
     .race-hero { padding: 4rem; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: center; position: relative; overflow: hidden; }
     .race-hero::after { content: attr(data-number); position: absolute; right: -0.02em; bottom: -.1em; font-family: var(--font-head); font-weight: 900; font-size: clamp(10rem, 20vw, 20rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--border); pointer-events: none; }
     .race-icon { width: 100px; height: 100px; background: var(--surface); border: 2px solid var(--accent); border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
@@ -56,20 +66,20 @@
     .badge-trail svg { stroke: var(--accent); }
     .badge-route svg { stroke: var(--accent2); }
 
-    /* QUICK STATS */
+    /* ── QUICK STATS ── */
     .quick-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .quick-stat { background: var(--surface); padding: 1.8rem 2rem; display: flex; flex-direction: column; gap: .3rem; }
     .quick-stat-val { font-family: var(--font-head); font-weight: 900; font-size: 2.5rem; line-height: 1; }
     .quick-stat-val span { color: var(--accent); font-size: 1.2rem; }
     .quick-stat-lbl { font-family: var(--font-head); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
 
-    /* SECTIONS */
+    /* ── SECTIONS ── */
     .section { padding: 4rem; border-bottom: 1px solid var(--border); }
     .section:last-child { border-bottom: none; }
     .section-title { font-family: var(--font-head); font-weight: 900; font-size: clamp(1.6rem, 2.5vw, 2.4rem); text-transform: uppercase; margin-bottom: 2rem; }
     .section-title span { color: var(--accent); }
 
-    /* PERF GRID */
+    /* ── PERF GRID ── */
     .perf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .perf-card { background: var(--bg); padding: 2rem; display: flex; flex-direction: column; gap: .4rem; }
     .perf-label { font-family: var(--font-head); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
@@ -79,11 +89,10 @@
     .perf-value.accent2 { color: var(--accent2); }
     .perf-sub { font-size: .78rem; color: var(--muted); margin-top: .2rem; }
 
-    /* BARRE % DEVANCÉS */
     .pct-bar-wrap { margin-top: .8rem; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
     .pct-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 1s ease; }
 
-    /* CLASSEMENTS */
+    /* ── CLASSEMENTS ── */
     .rank-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1px; }
     .rank-block { background: var(--bg); padding: 2rem; }
     .rank-block-label { font-family: var(--font-head); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: .6rem; }
@@ -96,7 +105,7 @@
     .rank-detail { font-size: .8rem; color: var(--muted); margin-top: .4rem; display: flex; align-items: center; gap: .35rem; }
     .rank-detail svg { flex-shrink: 0; }
 
-    /* COMPARAISON */
+    /* ── COMPARAISON ── */
     .comp-table { width: 100%; border-collapse: collapse; }
     .comp-table thead th { font-family: var(--font-head); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding: .75rem 1rem; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
     .comp-table thead th.tr { text-align: right; }
@@ -119,7 +128,6 @@
     .delta-neu { color: var(--muted); }
 
     .empty-state { color: var(--muted); font-family: var(--font-head); text-transform: uppercase; letter-spacing: .08em; padding: 3rem 0; font-size: .9rem; }
-
     .not-found { text-align: center; padding: 8rem 2rem; }
     .not-found h2 { font-family: var(--font-head); font-weight: 900; font-size: 3rem; text-transform: uppercase; margin-bottom: 1rem; }
     .not-found p { color: var(--muted); }
@@ -130,19 +138,110 @@
     .footer-credit { display: flex; align-items: center; gap: .4rem; }
     .footer-credit svg { stroke: var(--accent2); fill: var(--accent2); }
 
+    /* ═══════════════════════════════════════════
+       RESPONSIVE MOBILE — style app
+    ═══════════════════════════════════════════ */
     @media(max-width:900px) {
-      nav { padding: 1rem 1.5rem; } nav ul { gap: 1.5rem; } nav::after { display: none; } .logo { flex: initial; }
+      /* Nav top : logo + titre courant seulement */
+      nav {
+        padding: 0.8rem 1.2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-left-group { width: 100%; justify-content: flex-start; gap: 1rem; }
+      nav ul { display: none !important; }
+      .nav-actions-empty { display: none; }
+
       .main-content { margin-top: 65px; }
-      .race-hero { padding: 3rem 1.5rem; grid-template-columns: 1fr; gap: 1.5rem; }
-      .quick-stats { grid-template-columns: repeat(2,1fr); }
-      .perf-grid { grid-template-columns: repeat(2,1fr); }
-      .rank-duo { grid-template-columns: 1fr; }
-      .section { padding: 2rem 1.5rem; }
-      .back-link { padding: 1rem 1.5rem; }
-      footer { flex-direction: column; gap: .5rem; text-align: center; padding: 1.5rem; }
-    }
-    @media(max-width:600px) {
+
+      /* Back link compact */
+      .back-link { padding: 0.9rem 1.2rem; font-size: .78rem; letter-spacing: .1em; }
+
+      /* Hero en stack vertical, sans le grand chiffre de fond */
+      .race-hero {
+        padding: 1.8rem 1.2rem 1.5rem;
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
+      .race-hero::after { display: none; }
+      .race-icon { width: 64px; height: 64px; }
+      .race-icon svg { width: 28px; height: 28px; }
+      .race-name-big { font-size: clamp(1.8rem, 7vw, 3rem); margin-bottom: .7rem; }
+      .race-tag { font-size: .72rem; margin-bottom: .5rem; }
+      .meta-badges { gap: .5rem; }
+      .badge { font-size: .7rem; padding: .28rem .7rem; }
+
+      /* Quick stats : 2 colonnes */
+      .quick-stats { grid-template-columns: repeat(2, 1fr); }
+      .quick-stat { padding: 1.2rem 1rem; }
+      .quick-stat-val { font-size: 1.9rem; }
+
+      /* Sections */
+      .section { padding: 2rem 1.2rem 2rem; }
+      .section:last-child { padding-bottom: 7rem; } /* espace pour la barre basse */
+
+      /* Perf grid : 2 colonnes sur mobile */
       .perf-grid { grid-template-columns: 1fr 1fr; }
+      .perf-card { padding: 1.2rem 1rem; }
+      .perf-value { font-size: 2rem; }
+
+      /* 3e card perf passe en pleine largeur */
+      .perf-card:nth-child(3) { grid-column: 1 / -1; }
+
+      /* Classements */
+      .rank-duo { grid-template-columns: 1fr; }
+      .rank-number { font-size: 3rem; }
+
+      /* Tableau responsive : scroll horizontal */
+      .comp-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Footer */
+      footer {
+        flex-direction: column; gap: .5rem; text-align: center;
+        padding: 2rem 1.2rem 7rem;
+      }
+
+      /* ── BARRE DE NAVIGATION MOBILE BAS ── */
+      .app-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 68px;
+        background: rgba(20, 20, 24, 0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .app-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--muted);
+        text-decoration: none;
+        font-family: var(--font-head);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        flex: 1;
+        height: 100%;
+        transition: color 0.2s;
+      }
+      .app-bottom-nav-item svg { stroke: var(--muted); transition: stroke 0.2s; }
+      .app-bottom-nav-item.active { color: var(--accent); }
+      .app-bottom-nav-item.active svg { stroke: var(--accent); }
+    }
+
+    @media(max-width:480px) {
+      .perf-grid { grid-template-columns: 1fr; }
+      .perf-card:nth-child(3) { grid-column: auto; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -151,13 +250,19 @@
 <body>
 
   <nav>
-    <a href="index.html" class="logo">Run<span>Log</span></a>
+    <div class="nav-left-group">
+      <a href="index.html" class="logo">Run<span>Log</span></a>
+      <!-- Sur desktop : menu centré par position absolute -->
+    </div>
+
     <ul>
       <li><a href="index.html" id="nav-home">Accueil</a></li>
       <li><a href="courses.html" id="nav-runs">Courses</a></li>
       <li><a href="stats.html" id="nav-stats">Stats</a></li>
       <li><a href="profile.html" id="nav-profile">Profil</a></li>
     </ul>
+
+    <div class="nav-actions-empty"></div>
   </nav>
 
   <div class="main-content">
@@ -172,26 +277,46 @@
 
   <footer>
     <div class="footer-logo">Run<span>Log</span></div>
-    <div id="footer-credit" class="footer-credit">
+    <div class="footer-credit">
       Fait avec
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       et beaucoup de dénivelé
     </div>
   </footer>
 
+  <!-- BARRE NAV MOBILE BAS — miroir exact de index.html -->
+  <div class="app-bottom-nav">
+    <a href="index.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span id="bn-home">Accueil</span>
+    </a>
+    <a href="courses.html" class="app-bottom-nav-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2 22 17 12 22 2 17"/></svg>
+      <span id="bn-runs">Courses</span>
+    </a>
+    <a href="stats.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span id="bn-stats">Stats</span>
+    </a>
+    <a href="profile.html" class="app-bottom-nav-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="bn-profile">Profil</span>
+    </a>
+  </div>
+
 <script>
   // ── SVG ICONS ────────────────────────────────────────────────────────────
   const ICONS = {
-      trail: `<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 8 L13 14 L16 10 L21 20 Z"/><path d="M9 8 L11 11 L13 8 L15 11 L16 10" stroke-width="1"/></svg>`,
-trail_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 8 L13 14 L16 10 L21 20 Z"/></svg>`,
-run: `<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9 L12 13 L15 15"/><path d="M9 2 L15 2"/><path d="M12 2 L12 5"/></svg>`,
-run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9 L12 13 L15 15"/><path d="M9 2 L15 2"/><path d="M12 2 L12 5"/></svg>`,
+    trail: `<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 8 L13 14 L16 10 L21 20 Z"/><path d="M9 8 L11 11 L13 8 L15 11 L16 10" stroke-width="1"/></svg>`,
+    trail_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 8 L13 14 L16 10 L21 20 Z"/></svg>`,
+    run: `<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9 L12 13 L15 15"/><path d="M9 2 L15 2"/><path d="M12 2 L12 5"/></svg>`,
+    run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9 L12 13 L15 15"/><path d="M9 2 L15 2"/><path d="M12 2 L12 5"/></svg>`,
     pin:   `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
     cal:   `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
     user:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     award: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`,
     chevron_right: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
-};
+  };
 
   var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   var currentLang = 'fr';
@@ -212,10 +337,10 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
       empty_sim: "Pas d'autre course similaire enregistrée pour le moment.",
       th_race: "Course", th_dist: "Dist.", th_dplus: "D+", th_time: "Temps", th_allure: "Allure", th_vitesse: "Vitesse", th_clt_gen: "Clt. gén.", th_clt_cat: "Clt. cat.", th_pct: "% devancés",
       current_race_marker: "cette course",
-      footer_credit: "Fait avec ❤️ et beaucoup de dénivelé", locale: "fr-FR"
+      locale: "fr-FR"
     },
     en: {
-      nav_home: "Home", nav_runs: "Runs", nav_stats: "Stats", nav_profile: "Profile",
+      nav_home: "Home", nav_runs: "Races", nav_stats: "Stats", nav_profile: "Profile",
       back_default: "My races", back_athlete: "Back to profile", back_generic: "Back",
       loading: "Loading…",
       not_found_title: "Race <span>not found</span>", not_found_uid: "No identifier provided.", not_found_exist: "This race does not exist.",
@@ -229,7 +354,7 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
       empty_sim: "No other similar race recorded yet.",
       th_race: "Race", th_dist: "Dist.", th_dplus: "D+", th_time: "Time", th_allure: "Pace", th_vitesse: "Speed", th_clt_gen: "Gen. rank", th_clt_cat: "Cat. rank", th_pct: "% beaten",
       current_race_marker: "current race",
-      footer_credit: "Made with ❤️ and lots of elevation", locale: "en-US"
+      locale: "en-US"
     },
     es: {
       nav_home: "Inicio", nav_runs: "Carreras", nav_stats: "Estadísticas", nav_profile: "Perfil",
@@ -246,7 +371,7 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
       empty_sim: "No hay otra carrera similar registrada por el momento.",
       th_race: "Carrera", th_dist: "Dist.", th_dplus: "D+", th_time: "Tiempo", th_allure: "Ritmo", th_vitesse: "Velocidad", th_clt_gen: "Clas. gen.", th_clt_cat: "Clas. cat.", th_pct: "% superado",
       current_race_marker: "esta carrera",
-      footer_credit: "Hecho con ❤️ y mucho desnivel", locale: "es-ES"
+      locale: "es-ES"
     }
   };
 
@@ -254,10 +379,18 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
     currentLang = ['fr', 'en', 'es'].includes(lang) ? lang : 'fr';
     const t = translations[currentLang];
 
-    if(document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.nav_home;
-    if(document.getElementById('nav-runs')) document.getElementById('nav-runs').textContent = t.nav_runs;
-    if(document.getElementById('nav-stats')) document.getElementById('nav-stats').textContent = t.nav_stats;
+    // Nav desktop
+    if(document.getElementById('nav-home'))    document.getElementById('nav-home').textContent    = t.nav_home;
+    if(document.getElementById('nav-runs'))    document.getElementById('nav-runs').textContent    = t.nav_runs;
+    if(document.getElementById('nav-stats'))   document.getElementById('nav-stats').textContent   = t.nav_stats;
     if(document.getElementById('nav-profile')) document.getElementById('nav-profile').textContent = t.nav_profile;
+
+    // Bottom nav mobile
+    if(document.getElementById('bn-home'))    document.getElementById('bn-home').textContent    = t.nav_home;
+    if(document.getElementById('bn-runs'))    document.getElementById('bn-runs').textContent    = t.nav_runs;
+    if(document.getElementById('bn-stats'))   document.getElementById('bn-stats').textContent   = t.nav_stats;
+    if(document.getElementById('bn-profile')) document.getElementById('bn-profile').textContent = t.nav_profile;
+
     if(document.getElementById('loading-lbl')) document.getElementById('loading-lbl').textContent = t.loading;
 
     var params = new URLSearchParams(window.location.search);
@@ -326,17 +459,13 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
 
   function formatOrdinal(n) {
     if (!n) return '—';
-    if (currentLang === 'fr') {
-      return n + (parseInt(n) === 1 ? 'er' : 'e');
-    } else if (currentLang === 'es') {
-      return n + 'º';
-    } else {
-      var val = parseInt(n);
-      if (val === 1) return val + 'st';
-      if (val === 2) return val + 'nd';
-      if (val === 3) return val + 'rd';
-      return val + 'th';
-    }
+    if (currentLang === 'fr') return n + (parseInt(n) === 1 ? 'er' : 'e');
+    if (currentLang === 'es') return n + 'º';
+    var val = parseInt(n);
+    if (val === 1) return val + 'st';
+    if (val === 2) return val + 'nd';
+    if (val === 3) return val + 'rd';
+    return val + 'th';
   }
 
   function estSimilaire(ref, other) {
@@ -402,9 +531,10 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
       + '<div class="race-tag">' + t.race_tag + '</div>'
       + '<div class="race-name-big">' + c.nom + '</div>'
       + '<div class="meta-badges">'
-      + '<span class="badge badge-' + (isTrail?'trail':'route') + '">' + ICONS[isTrail?'trail_sm':'run_sm'] + (c.type||'—') + '</span>'      + (c.lieu ? '<span class="badge badge-meta">' + ICONS.pin + ' ' + c.lieu + '</span>' : '')
+      + '<span class="badge badge-' + (isTrail?'trail':'route') + '">' + ICONS[isTrail?'trail_sm':'run_sm'] + (c.type||'—') + '</span>'
+      + (c.lieu ? '<span class="badge badge-meta">' + ICONS.pin + ' ' + c.lieu + '</span>' : '')
       + '<span class="badge badge-meta">' + ICONS.cal + ' ' + dateLbl + '</span>'
-      + '<a href="athlete.html?id=' + c.user_id + '" class="badge badge-athlete">' + ICONS.user.replace('stroke-width="2"','stroke-width="2"') + ' ' + username + '</a>'
+      + '<a href="athlete.html?id=' + c.user_id + '" class="badge badge-athlete">' + ICONS.user + ' ' + username + '</a>'
       + '</div></div></div>';
 
     // ── QUICK STATS ──
@@ -470,7 +600,7 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
         return sa - sb;
       });
 
-      html += '<div style="overflow-x:auto"><table class="comp-table">'
+      html += '<div class="comp-table-wrap"><table class="comp-table">'
         + '<thead><tr>'
         + '<th>' + t.th_race + '</th>'
         + '<th class="tr">' + t.th_dist + '</th>'
@@ -494,7 +624,7 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
         var deltaStr = '';
         if (!isCurrent && allureSec && rAllure) {
           var d = Math.round(rAllure - allureSec);
-          if       (d >  5) deltaStr = ' <span class="delta-neg">(+' + Math.abs(d) + '" /km)</span>';
+          if      (d >  5) deltaStr = ' <span class="delta-neg">(+' + Math.abs(d) + '" /km)</span>';
           else if (d < -5) deltaStr = ' <span class="delta-pos">(−' + Math.abs(d) + '" /km)</span>';
           else             deltaStr = ' <span class="delta-neu">(≈)</span>';
         }
@@ -546,13 +676,8 @@ run_sm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-widt
               .select('langue')
               .eq('id', res.data.user.id)
               .maybeSingle();
-
-            if (profile && profile.langue) {
-              applyBaseLanguage(profile.langue);
-            }
-          } catch(e) {
-            console.error(e);
-          }
+            if (profile && profile.langue) applyBaseLanguage(profile.langue);
+          } catch(e) { console.error(e); }
         }
         loadRace();
       });

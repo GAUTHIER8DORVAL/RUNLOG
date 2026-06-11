@@ -131,16 +131,17 @@
 
       /* Lignes de course mobile :
          col 1 = rang (fixe 36px)
-         col 2 = nom/meta (flex)
-         col 3 = distance (fixe)
+         col 2 = nom/meta (flex, min-width:0 obligatoire pour que le texte tronque)
+         col 3 = distance (fixe auto)
          col 4 = boutons (fixe 76px, jamais débordant) */
       .race-row {
-        grid-template-columns: 36px 1fr auto 76px;
+        grid-template-columns: 36px minmax(0, 1fr) auto 76px;
         gap: 0.6rem;
         padding: 0.9rem 1rem;
-        /* on empêche tout débordement */
         overflow: hidden;
       }
+      /* La cellule texte doit avoir min-width:0 pour que ellipsis fonctionne dans une grid */
+      .race-row > div:nth-child(2) { min-width: 0; }
       .race-rank { font-size: 1.3rem; min-width: 0; }
       /* Colonnes cachées sur mobile */
       .badge   { display: none; }
@@ -149,7 +150,7 @@
       .race-dist { font-size: 0.95rem; white-space: nowrap; }
       .race-dist small { display: inline; }
       /* Nom tronqué si trop long */
-      .race-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+      .race-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
       /* Boutons d'action : taille réduite, alignés à droite, jamais hors cadre */
       .race-actions {
